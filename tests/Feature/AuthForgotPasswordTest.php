@@ -9,10 +9,41 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
+use Illuminate\Support\Facades\RateLimiter;
+
 
 class AuthForgotPasswordTest extends TestCase
 {
     use RefreshDatabase;
+    protected string $testIp;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        /*
+         * Give every test a unique IP address so that the global
+         * throttle:api middleware does not share rate-limit counters
+         * between tests.
+         */
+        $this->testIp = '10.202.'
+            .random_int(1, 254)
+            .'.'
+            .random_int(1, 254);
+
+        /*
+         * Clear the common limiter key formats before each test.
+         */
+        RateLimiter::clear($this->testIp);
+        RateLimiter::clear("api|{$this->testIp}");
+
+        /*
+         * Apply the unique test IP to every HTTP request.
+         */
+        $this->withServerVariables([
+            'REMOTE_ADDR' => $this->testIp,
+        ]);
+    }
 
     /**
      * A valid registered email should receive a password reset notification.

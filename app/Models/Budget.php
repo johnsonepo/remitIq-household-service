@@ -43,8 +43,32 @@ class Budget extends Model
         return $this->hasMany(BudgetItem::class);
     }
 
+    /**
+     * Calculate the total planned amount from budget items.
+     *
+     * The item-level planned amounts are the source of truth for
+     * budget calculations.
+     */
+    public function totalPlanned(): float
+    {
+        return (float) $this->items()->sum('planned_amount');
+    }
+
+    /**
+     * Calculate the total actual amount from budget items.
+     */
     public function totalActual(): float
     {
         return (float) $this->items()->sum('actual_amount');
+    }
+
+    /**
+     * Calculate the remaining budget amount.
+     *
+     * Remaining = total planned - total actual.
+     */
+    public function remaining(): float
+    {
+        return $this->totalPlanned() - $this->totalActual();
     }
 }

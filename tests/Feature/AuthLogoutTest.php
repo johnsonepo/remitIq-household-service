@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthLogoutTest extends TestCase
 {
