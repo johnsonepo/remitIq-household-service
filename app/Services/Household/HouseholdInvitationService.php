@@ -94,47 +94,47 @@ class HouseholdInvitationService
      */
     public function accept(string $token, User $user): HouseholdMember
     {
-        return DB::transaction(function () use ($token, $user): HouseholdMember {
-            /** @var HouseholdInvitation|null $invitation */
-            $invitation = $this->repository->findByToken($token);
+        /** @var HouseholdInvitation|null $invitation */
+        $invitation = $this->repository->findByToken($token);
 
-            if (! $invitation) {
-                throw new ModelNotFoundException;
-            }
+        if (! $invitation) {
+            throw new ModelNotFoundException;
+        }
 
-            if (! $invitation->isPending()) {
-                throw ApiException::conflict('This invitation is no longer pending.');
-            }
+        if ($invitation->status === 'pending' && $invitation->isExpired()) {
+            $this->expire($invitation);
 
-            if ($invitation->isExpired()) {
-                $this->expire($invitation);
+            throw ApiException::badRequest('This invitation has expired.');
+        }
 
-                throw ApiException::badRequest('This invitation has expired.');
-            }
+        if (! $invitation->isPending()) {
+            throw ApiException::conflict('This invitation is no longer pending.');
+        }
 
-            if (
-                strtolower($invitation->email)
-                !== strtolower($user->email)
-            ) {
-                throw ApiException::forbidden('This invitation does not belong to the authenticated user.');
-            }
+        if (
+            strtolower($invitation->email)
+            !== strtolower($user->email)
+        ) {
+            throw ApiException::forbidden('This invitation does not belong to the authenticated user.');
+        }
 
-            /** @var Household $household */
-            $household = $invitation->household;
+        /** @var Household $household */
+        $household = $invitation->household;
 
-            if ($household->owner_id === $user->id) {
-                throw ApiException::conflict('The household owner cannot accept an invitation.');
-            }
+        if ($household->owner_id === $user->id) {
+            throw ApiException::conflict('The household owner cannot accept an invitation.');
+        }
 
-            /** @var HouseholdMember|null $existingMember */
-            $existingMember = $household->memberships()
-                ->where('user_id', $user->id)
-                ->first();
+        /** @var HouseholdMember|null $existingMember */
+        $existingMember = $household->memberships()
+            ->where('user_id', $user->id)
+            ->first();
 
-            if ($existingMember) {
-                throw ApiException::conflict('You are already a member of this household.');
-            }
+        if ($existingMember) {
+            throw ApiException::conflict('You are already a member of this household.');
+        }
 
+        return DB::transaction(function () use ($invitation, $household, $user): HouseholdMember {
             /** @var HouseholdMember $member */
             $member = $household->memberships()->create([
                 'user_id' => $user->id,
@@ -165,31 +165,31 @@ class HouseholdInvitationService
      */
     public function decline(string $token, User $user): HouseholdInvitation
     {
-        return DB::transaction(function () use ($token, $user): HouseholdInvitation {
-            /** @var HouseholdInvitation|null $invitation */
-            $invitation = $this->repository->findByToken($token);
+        /** @var HouseholdInvitation|null $invitation */
+        $invitation = $this->repository->findByToken($token);
 
-            if (! $invitation) {
-                throw new ModelNotFoundException;
-            }
+        if (! $invitation) {
+            throw new ModelNotFoundException;
+        }
 
-            if (! $invitation->isPending()) {
-                throw ApiException::conflict('This invitation is no longer pending.');
-            }
+        if ($invitation->status === 'pending' && $invitation->isExpired()) {
+            $this->expire($invitation);
 
-            if ($invitation->isExpired()) {
-                $this->expire($invitation);
+            throw ApiException::badRequest('This invitation has expired.');
+        }
 
-                throw ApiException::badRequest('This invitation has expired.');
-            }
+        if (! $invitation->isPending()) {
+            throw ApiException::conflict('This invitation is no longer pending.');
+        }
 
-            if (
-                strtolower($invitation->email)
-                !== strtolower($user->email)
-            ) {
-                throw ApiException::forbidden('This invitation does not belong to the authenticated user.');
-            }
+        if (
+            strtolower($invitation->email)
+            !== strtolower($user->email)
+        ) {
+            throw ApiException::forbidden('This invitation does not belong to the authenticated user.');
+        }
 
+        return DB::transaction(function () use ($invitation, $user): HouseholdInvitation {
             $invitation->status = 'declined';
             $invitation->save();
 
@@ -212,7 +212,7 @@ class HouseholdInvitationService
      */
     public function cancel(HouseholdInvitation $invitation): bool
     {
-        if (! $invitation->isPending()) {
+        if ($invitation->status !== 'pending') {
             return false;
         }
 
@@ -237,7 +237,7 @@ class HouseholdInvitationService
      */
     public function expire(HouseholdInvitation $invitation): bool
     {
-        if (! $invitation->isPending()) {
+        if ($invitation->status !== 'pending') {
             return false;
         }
 

@@ -333,8 +333,13 @@ class BudgetItemServiceTest extends TestCase
         $user = User::factory()->create();
         $household = $this->household($user);
 
-        $budgetOne = $this->budget($user, $household);
-        $budgetTwo = $this->budget($user, $household);
+        $budgetOne = $this->budget($user, $household, [
+            'month' => '2026-08-01',
+        ]);
+
+        $budgetTwo = $this->budget($user, $household, [
+            'month' => '2026-09-01',
+        ]);
 
         $category = $this->defaultCategory();
         $item = $this->item($budgetTwo, $category);
@@ -548,24 +553,29 @@ class BudgetItemServiceTest extends TestCase
     }
 
     public function test_delete_rejects_item_from_another_budget(): void
-    {
-        $user = User::factory()->create();
-        $household = $this->household($user);
+{
+    $user = User::factory()->create();
+    $household = $this->household($user);
 
-        $budgetOne = $this->budget($user, $household);
-        $budgetTwo = $this->budget($user, $household);
+    $budgetOne = $this->budget($user, $household, [
+        'month' => '2026-03-01',
+    ]);
 
-        $category = $this->defaultCategory();
-        $item = $this->item($budgetTwo, $category);
+    $budgetTwo = $this->budget($user, $household, [
+        'month' => '2026-04-01',
+    ]);
 
-        $this->expectException(ApiException::class);
+    $category = $this->defaultCategory();
+    $item = $this->item($budgetTwo, $category);
 
-        $this->service->delete(
-            $item,
-            $budgetOne,
-            $user->id
-        );
-    }
+    $this->expectException(ApiException::class);
+
+    $this->service->delete(
+        $item,
+        $budgetOne,
+        $user->id
+    );
+}
 
     public function test_delete_rejects_budget_owned_by_another_user(): void
     {
