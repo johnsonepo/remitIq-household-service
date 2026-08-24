@@ -1,24 +1,150 @@
-cd "${{ secrets.PRODUCTION_APP_PATH }}"
+name: CI
 
-            # Pull latest code updates from git repository
-            git pull origin main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-            # Build production services locally from the Dockerfile's production target
-            docker compose build household-service-prod queue-prod scheduler-prod
+jobs:
+  # ==========================
+  # Code Quality & Static Analysis
+  # ==========================
+  code-quality:
+    name: Code Quality & Static Analysis
+    runs-on: ubuntu-latest
 
-            docker compose up -d household-service-prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            docker compose exec -T household-service-prod \
-              php artisan migrate --force
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, redis
+          tools: composer:v2
 
-            docker compose exec -T household-service-prod \
-              php artisan optimize:clear
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $github_output
 
-            docker compose exec -T household-service-prod \
-              php artisan optimize
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
-            docker compose up -d queue-prod
-            docker compose up -d scheduler-prod
-            docker compose up -d nginx-prod
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
 
-            docker compose ps
+      - name: Run Laravel Pint (Code Style)
+        run: ./vendor/bin/pint --test
+
+      - name: Run PHPStan (Static Analysis)
+        run: composer analyse
+
+      - name: Composer Security Audit
+        run: composer audit
+
+  # ==========================
+  # Tests
+  # ==========================
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: remitiq_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:T21tczF3bTVwdW1sY3k0Z3R6ZTFmZzFoM2o4azA5Zm8=
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: remitiq_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, redis
+          tools: composer:v2
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Generate JWT Keys
+        run: |
+          mkdir -p storage/app/keys
+          openssl genrsa -out storage/app/keys/jwt-private.pem 2048
+          openssl rsa -in storage/app/keys/jwt-private.pem -pubout -out storage/app/keys/jwt-public.pem
+
+      - name: Run Database Migrations
+        run: php artisan migrate --force
+
+      - name: Run PHPUnit Tests
+        run: php artisan test
+
+  # ==========================
+  # Docker Build Verification
+  # ==========================
+  docker-build:
+    name: Docker Build (production target)
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: production
+          push: false
+          tags: remitiq-household-service:ci-check
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
