@@ -83,6 +83,12 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      - name: Generate JWT keys
+        run: |
+          mkdir -p storage/app/keys
+          openssl genrsa -out storage/app/keys/jwt-private.pem 2048
+          openssl rsa -in storage/app/keys/jwt-private.pem -pubout -out storage/app/keys/jwt-public.pem
+
       - name: Configure test environment
         run: |
           sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
@@ -93,6 +99,8 @@ jobs:
           sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env
           sed -i 's/^REDIS_HOST=.*/REDIS_HOST=127.0.0.1/' .env
           sed -i 's/^REDIS_PORT=.*/REDIS_PORT=6379/' .env
+          sed -i "s#^JWT_PRIVATE_KEY=.*#JWT_PRIVATE_KEY=\"file://$(pwd)/storage/app/keys/jwt-private.pem\"#" .env
+          sed -i "s#^JWT_PUBLIC_KEY=.*#JWT_PUBLIC_KEY=\"file://$(pwd)/storage/app/keys/jwt-public.pem\"#" .env
 
       - name: Clear Laravel caches
         run: php artisan optimize:clear
@@ -105,6 +113,9 @@ jobs:
 
       - name: PHPStan
         run: composer analyse
+
+      - name: Dependency vulnerability audit
+        run: composer audit
 
       - name: PHPUnit
         run: php artisan test --parallel
