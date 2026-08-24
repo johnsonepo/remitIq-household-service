@@ -4,25 +4,26 @@
 # ==============================================================================
 
 includes:
-    - vendor/nunomaduro/larastan/extension.neon
-
+  - vendor/nunomaduro/larastan/extension.neon
 
 parameters:
+  paths:
+    - app
 
-    paths:
-        - app
+  ignoreErrors:
+    - '#Call to an undefined static method PHPOpenSourceSaver\\JWTAuth\\Facades\\JWTAuth::(fromUser|factory)\(\)#'
 
-    # Start with moderate strictness.
-    # Increase after architecture stabilizes.
-    level: 5
+  # Start with moderate strictness.
+  # Increase after architecture stabilizes.
+  level: 5
 
-    # Laravel bootstrap
-    bootstrapFiles:
+  # Laravel bootstrap
+  bootstrapFiles:
     - bootstrap/app.php
     - vendor/autoload.php
 
-    # Exclude generated/framework files
-    excludePaths:
-        - database/*
-        - storage/*
-        - bootstrap/cache/*
+  # Exclude generated/framework files
+  excludePaths:
+    - database/*
+    - storage/*
+    - bootstrap/cache/*
