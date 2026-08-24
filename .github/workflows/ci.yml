@@ -68,6 +68,9 @@ jobs:
       - name: Build and Start Docker Containers
         run: docker compose up -d --build
 
+      - name: Install Dependencies inside Container
+        run: docker compose exec -T household-service composer install --no-interaction --no-progress --prefer-dist
+
       - name: Generate Application Key and JWT Keys
         run: |
           docker compose exec -T household-service php artisan key:generate
