@@ -20,105 +20,76 @@ env:
 jobs:
 
   # ============================================================================
-  # CI - Tests and Static Analysis
+  # CI - Tests and Static Analysis via Docker Compose
   # ============================================================================
 
   test:
     name: Tests & Static Analysis
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: remitiq_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d remitiq_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-          extensions: pdo, pdo_pgsql, mbstring, intl, bcmath, gd, zip, exif
-          coverage: none
-          tools: composer:v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Validate Composer
-        run: composer validate --strict
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
-          restore-keys: |
-            composer-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Prepare Laravel environment
+      - name: Build and Start Containers
         run: |
-          cp .env.example .env
-          php artisan key:generate
+          docker compose up -d --build
 
-      - name: Generate JWT keys
+      - name: Prepare Laravel Environment in Container
         run: |
-          mkdir -p storage/app/keys
-          openssl genrsa -out storage/app/keys/jwt-private.pem 2048
-          openssl rsa -in storage/app/keys/jwt-private.pem -pubout -out storage/app/keys/jwt-public.pem
+          docker compose exec -T app cp .env.example .env
+          docker compose exec -T app php artisan key:generate
 
-      - name: Configure test environment
+      - name: Generate JWT Keys in Container
         run: |
-          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
-          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
-          sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env
-          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=remitiq_test/' .env
-          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env
-          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env
-          sed -i 's/^REDIS_HOST=.*/REDIS_HOST=127.0.0.1/' .env
-          sed -i 's/^REDIS_PORT=.*/REDIS_PORT=6379/' .env
-          sed -i "s#^JWT_PRIVATE_KEY=.*#JWT_PRIVATE_KEY=\"file://$(pwd)/storage/app/keys/jwt-private.pem\"#" .env
-          sed -i "s#^JWT_PUBLIC_KEY=.*#JWT_PUBLIC_KEY=\"file://$(pwd)/storage/app/keys/jwt-public.pem\"#" .env
+          docker compose exec -T app mkdir -p storage/app/keys
+          docker compose exec -T app openssl genrsa -out storage/app/keys/jwt-private.pem 2048
+          docker compose exec -T app openssl rsa -in storage/app/keys/jwt-private.pem -pubout -out storage/app/keys/jwt-public.pem
 
-      - name: Clear Laravel caches
-        run: php artisan optimize:clear
+      - name: Configure Test Environment Variables
+        run: |
+          docker compose exec -T app sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
+          docker compose exec -T app sed -i 's/^DB_HOST=.*/DB_HOST=postgres/' .env
+          docker compose exec -T app sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env
+          docker compose exec -T app sed -i 's/^DB_DATABASE=.*/DB_DATABASE=remitiq_test/' .env
+          docker compose exec -T app sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env
+          docker compose exec -T app sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env
+          docker compose exec -T app sed -i 's/^REDIS_HOST=.*/REDIS_HOST=redis/' .env
+          docker compose exec -T app sed -i 's/^REDIS_PORT=.*/REDIS_PORT=6379/' .env
+          docker compose exec -T app sed -i 's#^JWT_PRIVATE_KEY=.*#JWT_PRIVATE_KEY="file:///var/www/html/storage/app/keys/jwt-private.pem"#g' .env
+          docker compose exec -T app sed -i 's#^JWT_PUBLIC_KEY=.*#JWT_PUBLIC_KEY="file:///var/www/html/storage/app/keys/jwt-public.pem"#g' .env
 
-      - name: Run database migrations
-        run: php artisan migrate --force
+      - name: Clear Laravel Caches
+        run: |
+          docker compose exec -T app php artisan optimize:clear
+
+      - name: Run Database Migrations
+        run: |
+          docker compose exec -T app php artisan migrate --force
 
       - name: Laravel Pint
-        run: ./vendor/bin/pint --test
+        run: |
+          docker compose exec -T app ./vendor/bin/pint --test
 
       - name: PHPStan
-        run: composer analyse
+        run: |
+          docker compose exec -T app composer analyse
 
-      - name: Dependency vulnerability audit
-        run: composer audit
+      - name: Dependency Vulnerability Audit
+        run: |
+          docker compose exec -T app composer audit
 
-      - name: PHPUnit
-        run: php artisan test --parallel
+      - name: PHPUnit Tests in Container
+        run: |
+          docker compose exec -T app php artisan test
+
+      - name: Tear Down Docker Environment
+        if: always()
+        run: |
+          docker compose down
 
   # ============================================================================
   # Production Docker Image
