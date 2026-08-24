@@ -31,20 +31,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Prepare Environment File
+        run: |
+          cp .env.example .env
 
       - name: Build and Start Containers
         run: |
           docker compose up -d --build
 
-      - name: Prepare Laravel Environment in Container
+      - name: Generate Application Key and JWT Keys in Container
         run: |
-          docker compose exec -T app cp .env.example .env
           docker compose exec -T app php artisan key:generate
-
-      - name: Generate JWT Keys in Container
-        run: |
           docker compose exec -T app mkdir -p storage/app/keys
           docker compose exec -T app openssl genrsa -out storage/app/keys/jwt-private.pem 2048
           docker compose exec -T app openssl rsa -in storage/app/keys/jwt-private.pem -pubout -out storage/app/keys/jwt-public.pem
