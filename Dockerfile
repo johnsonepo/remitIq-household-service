@@ -25,6 +25,9 @@ RUN composer install \
 
 COPY . .
 
+# Provide a temporary env file for package discovery scripts during build
+RUN cp .env.example .env || touch .env
+
 RUN composer dump-autoload \
     --optimize \
     --no-dev
@@ -51,6 +54,8 @@ RUN composer install \
     --ignore-platform-reqs
 
 COPY . .
+
+RUN cp .env.example .env || touch .env
 
 RUN composer dump-autoload --optimize
 
