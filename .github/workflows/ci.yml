@@ -71,6 +71,9 @@ jobs:
       - name: Install Dependencies inside Container
         run: docker compose exec -T household-service composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Verify PHPUnit Configuration Exists
+        run: docker compose exec -T household-service ls -la phpunit.xml
+
       - name: Generate Application Key and JWT Keys
         run: |
           docker compose exec -T household-service php artisan key:generate
