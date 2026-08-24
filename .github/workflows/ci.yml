@@ -51,78 +51,50 @@ jobs:
         run: composer audit
 
   # ==========================
-  # Tests
+  # Tests (Inside Docker Compose)
   # ==========================
   test:
-    name: Tests
+    name: Tests (Docker)
     runs-on: ubuntu-latest
     needs: code-quality
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: remitiq_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    env:
-      APP_ENV: testing
-      APP_KEY: base64:T21tczF3bTVwdW1sY3k0Z3R6ZTFmZzFoM2o4azA5Zm8=
-      DB_CONNECTION: pgsql
-      DB_HOST: 127.0.0.1
-      DB_PORT: 5432
-      DB_DATABASE: remitiq_test
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      REDIS_HOST: 127.0.0.1
-      REDIS_PORT: 6379
-      CACHE_STORE: redis
-      QUEUE_CONNECTION: redis
-      SESSION_DRIVER: redis
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, redis
-          tools: composer:v2
+      - name: Prepare Environment File
+        run: cp .env.example .env
 
-      - name: Install Dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Build and Start Docker Containers
+        run: docker compose up -d --build
 
-      - name: Generate JWT Keys
+      - name: Generate Application Key and JWT Keys
         run: |
-          mkdir -p storage/app/keys
-          openssl genrsa -out storage/app/keys/jwt-private.pem 2048
-          openssl rsa -in storage/app/keys/jwt-private.pem -pubout -out storage/app/keys/jwt-public.pem
+          docker compose exec -T household-service php artisan key:generate
+          docker compose exec -T household-service mkdir -p storage/app/keys
+          docker compose exec -T household-service openssl genrsa -out storage/app/keys/jwt-private.pem 2048
+          docker compose exec -T household-service openssl rsa -in storage/app/keys/jwt-private.pem -pubout -out storage/app/keys/jwt-public.pem
+
+      - name: Configure Test Environment Variables inside Container
+        run: |
+          docker compose exec -T household-service sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
+          docker compose exec -T household-service sed -i 's/^DB_HOST=.*/DB_HOST=household-db/' .env
+          docker compose exec -T household-service sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env
+          docker compose exec -T household-service sed -i 's/^DB_DATABASE=.*/DB_DATABASE=remitiq_test/' .env
+          docker compose exec -T household-service sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env
+          docker compose exec -T household-service sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env
+          docker compose exec -T household-service sed -i 's/^REDIS_HOST=.*/REDIS_HOST=redis/' .env
+          docker compose exec -T household-service sed -i 's/^REDIS_PORT=.*/REDIS_PORT=6379/' .env
 
       - name: Run Database Migrations
-        run: php artisan migrate --force
+        run: docker compose exec -T household-service php artisan migrate --force
 
       - name: Run PHPUnit Tests
-        run: php artisan test
+        run: docker compose exec -T household-service php artisan test
+
+      - name: Tear Down Containers
+        if: always()
+        run: docker compose down
 
   # ==========================
   # Docker Build Verification
