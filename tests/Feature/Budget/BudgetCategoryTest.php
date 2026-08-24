@@ -57,10 +57,7 @@ class BudgetCategoryTest extends TestCase
             'is_default' => false,
         ]);
 
-        $this->patchJson(
-            "/api/v1/budget-categories/{$category->id}",
-            ['name' => 'Updated']
-        )->assertUnauthorized();
+        $this->patchJson("/api/v1/budget-categories/{$category->id}", ['name' => 'Updated'])->assertUnauthorized();
     }
 
     public function test_delete_requires_authentication(): void
@@ -69,9 +66,7 @@ class BudgetCategoryTest extends TestCase
             'is_default' => false,
         ]);
 
-        $this->deleteJson(
-            "/api/v1/budget-categories/{$category->id}"
-        )->assertUnauthorized();
+        $this->deleteJson("/api/v1/budget-categories/{$category->id}")->assertUnauthorized();
     }
 
     /*
@@ -399,14 +394,11 @@ class BudgetCategoryTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->patchJson(
-                "/api/v1/budget-categories/{$category->id}",
-                [
-                    'name' => 'Updated Category',
-                    'icon' => 'updated',
-                    'color' => '#654321',
-                ]
-            )
+            ->patchJson("/api/v1/budget-categories/{$category->id}", [
+                'name' => 'Updated Category',
+                'icon' => 'updated',
+                'color' => '#654321',
+            ])
             ->assertOk();
 
         $this->assertDatabaseHas('budget_categories', [
@@ -430,12 +422,9 @@ class BudgetCategoryTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->patchJson(
-                "/api/v1/budget-categories/{$category->id}",
-                [
-                    'name' => 'Changed',
-                ]
-            )
+            ->patchJson("/api/v1/budget-categories/{$category->id}", [
+                'name' => 'Changed',
+            ])
             ->assertOk();
 
         $category->refresh();
@@ -457,10 +446,7 @@ class BudgetCategoryTest extends TestCase
         ]);
 
         $this->auth($attacker)
-            ->patchJson(
-                "/api/v1/budget-categories/{$category->id}",
-                ['name' => 'Hacked']
-            )
+            ->patchJson("/api/v1/budget-categories/{$category->id}", ['name' => 'Hacked'])
             ->assertForbidden();
 
         $this->assertDatabaseHas('budget_categories', [
@@ -478,10 +464,7 @@ class BudgetCategoryTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->patchJson(
-                "/api/v1/budget-categories/{$category->id}",
-                ['name' => 'Hacked']
-            )
+            ->patchJson("/api/v1/budget-categories/{$category->id}", ['name' => 'Hacked'])
             ->assertForbidden();
 
         $this->assertDatabaseHas('budget_categories', [

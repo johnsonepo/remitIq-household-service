@@ -1,14 +1,14 @@
 # ==============================================================================
 # RemitIQ Household Service
-# Laravel PHP Application Dockerfile
+# Laravel PHP Application
 # ==============================================================================
 
 
 # ------------------------------------------------------------------------------
-# Stage 1: Composer Dependencies (production)
+# Stage 1: Production Composer Dependencies
 # ------------------------------------------------------------------------------
 
-FROM composer:2 AS composer-builder
+FROM composer:2 AS composer-production
 
 WORKDIR /app
 
@@ -25,21 +25,18 @@ RUN composer install \
 
 COPY . .
 
-RUN composer dump-autoload --optimize --no-dev
+RUN composer dump-autoload \
+    --optimize \
+    --no-dev
 
 RUN php artisan package:discover --ansi
 
 
-
 # ------------------------------------------------------------------------------
-# Stage 2: Composer Dependencies (development)
-# Includes dev packages:
-# - Laravel Pint
-# - Pest
-# - PHPStan
+# Stage 2: Development Composer Dependencies
 # ------------------------------------------------------------------------------
 
-FROM composer:2 AS composer-builder-dev
+FROM composer:2 AS composer-development
 
 WORKDIR /app
 
@@ -60,18 +57,13 @@ RUN composer dump-autoload --optimize
 RUN php artisan package:discover --ansi
 
 
-
 # ------------------------------------------------------------------------------
-# Stage 3: PHP Runtime Base
-# Shared PHP extensions only
-# No Composer
-# No development tools
+# Stage 3: PHP Runtime
 # ------------------------------------------------------------------------------
 
 FROM php:8.3-fpm-alpine AS php-base
 
 WORKDIR /var/www/html
-
 
 RUN apk add --no-cache \
         postgresql-dev \
@@ -96,125 +88,78 @@ RUN apk add --no-cache \
         exif \
         gd
 
-
 COPY docker/php/php.ini \
     /usr/local/etc/php/conf.d/custom.ini
 
 
-
 # ------------------------------------------------------------------------------
-# Stage 4: Development Environment
-#
-# Contains:
-# - Composer
-# - Git
-# - Laravel Pint
-# - Testing tools
+# Stage 4: Development
 # ------------------------------------------------------------------------------
 
 FROM php-base AS development
 
-
 ARG WWWUSER=1000
 ARG WWWGROUP=1000
-
 
 RUN apk add --no-cache \
         git \
         curl
 
-
-# Install Composer only for development
 RUN curl -sS https://getcomposer.org/installer | php \
         -- --install-dir=/usr/local/bin \
         --filename=composer
 
-
-
-# Match container user permissions with host user
-
-RUN deluser www-data 2>/dev/null; \
-    delgroup www-data 2>/dev/null; \
+RUN deluser www-data 2>/dev/null || true && \
+    delgroup www-data 2>/dev/null || true && \
     addgroup -g ${WWWGROUP} www-data && \
     adduser -D \
         -u ${WWWUSER} \
         -G www-data \
         www-data
 
-
-# Git refuses to operate on bind-mounted directories owned by a
-# different UID than the running user, treating it as a security
-# risk (dubious ownership). Since /var/www/html is bind-mounted from
-# the host, explicitly trust it — otherwise commands like
-# `composer show` print a "dubious ownership" warning (Composer
-# shells out to git internally for some operations).
 RUN git config --global --add safe.directory /var/www/html
 
-
-# Development opcache config: validate_timestamps=1 so PHP-FPM
-# rechecks each file's mtime on every request and recompiles if
-# changed — essential for local dev with a bind mount, since without
-# it, code edits are invisible until the container is restarted.
-COPY docker/php/opcache-dev.ini /usr/local/etc/php/conf.d/opcache.ini
-
-
+COPY docker/php/opcache-dev.ini \
+    /usr/local/etc/php/conf.d/opcache.ini
 
 COPY . .
 
-COPY --from=composer-builder-dev \
+COPY --from=composer-development \
     /app/vendor \
     ./vendor
 
-
+RUN mkdir -p storage bootstrap/cache && \
+    chown -R www-data:www-data \
+        storage \
+        bootstrap/cache
 
 EXPOSE 9000
-
 
 CMD ["php-fpm"]
 
 
-
-
 # ------------------------------------------------------------------------------
-# Stage 5: Production Environment
-#
-# Contains:
-# - PHP Runtime
-# - Application
-# - Production dependencies only
-#
-# Does NOT contain:
-# - Composer
-# - Git
-# - Development tools
+# Stage 5: Production
 # ------------------------------------------------------------------------------
 
 FROM php-base AS production
 
-
-# Production opcache config: validate_timestamps=0 for maximum
-# performance, appropriate since production code only changes via a
-# fresh image build/deploy, never a live file edit.
-COPY docker/php/opcache-prod.ini /usr/local/etc/php/conf.d/opcache.ini
-
+COPY docker/php/opcache-prod.ini \
+    /usr/local/etc/php/conf.d/opcache.ini
 
 COPY . .
 
-COPY --from=composer-builder \
+COPY --from=composer-production \
     /app/vendor \
     ./vendor
 
-
-
-RUN chown -R www-data:www-data \
+RUN mkdir -p storage bootstrap/cache && \
+    chown -R www-data:www-data \
         storage \
         bootstrap/cache
 
-
 USER www-data
 
-
 EXPOSE 9000
-
 
 CMD ["php-fpm"]

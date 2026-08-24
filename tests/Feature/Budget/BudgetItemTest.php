@@ -86,10 +86,7 @@ class BudgetItemTest extends TestCase
     {
         $budget = Budget::factory()->create();
 
-        $this->postJson(
-            "/api/v1/budgets/{$budget->id}/items",
-            []
-        )->assertUnauthorized();
+        $this->postJson("/api/v1/budgets/{$budget->id}/items", [])->assertUnauthorized();
     }
 
     public function test_show_requires_authentication(): void
@@ -99,9 +96,7 @@ class BudgetItemTest extends TestCase
             'budget_id' => $budget->id,
         ]);
 
-        $this->getJson(
-            "/api/v1/budgets/{$budget->id}/items/{$item->id}"
-        )->assertUnauthorized();
+        $this->getJson("/api/v1/budgets/{$budget->id}/items/{$item->id}")->assertUnauthorized();
     }
 
     public function test_update_requires_authentication(): void
@@ -111,10 +106,7 @@ class BudgetItemTest extends TestCase
             'budget_id' => $budget->id,
         ]);
 
-        $this->patchJson(
-            "/api/v1/budgets/{$budget->id}/items/{$item->id}",
-            ['planned_amount' => 100]
-        )->assertUnauthorized();
+        $this->patchJson("/api/v1/budgets/{$budget->id}/items/{$item->id}", ['planned_amount' => 100])->assertUnauthorized();
     }
 
     public function test_delete_requires_authentication(): void
@@ -124,9 +116,7 @@ class BudgetItemTest extends TestCase
             'budget_id' => $budget->id,
         ]);
 
-        $this->deleteJson(
-            "/api/v1/budgets/{$budget->id}/items/{$item->id}"
-        )->assertUnauthorized();
+        $this->deleteJson("/api/v1/budgets/{$budget->id}/items/{$item->id}")->assertUnauthorized();
     }
 
     /*
@@ -212,10 +202,7 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $response = $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                $this->itemData($category)
-            );
+            ->postJson("/api/v1/budgets/{$budget->id}/items", $this->itemData($category));
 
         $response->assertCreated();
 
@@ -235,10 +222,7 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($attacker)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                $this->itemData($category)
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", $this->itemData($category))
             ->assertForbidden();
 
         $this->assertDatabaseCount('budget_items', 0);
@@ -250,12 +234,9 @@ class BudgetItemTest extends TestCase
         $budget = $this->budget($user);
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                [
-                    'planned_amount' => 100000,
-                ]
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", [
+                'planned_amount' => 100000,
+            ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['budget_category_id']);
     }
@@ -266,13 +247,10 @@ class BudgetItemTest extends TestCase
         $budget = $this->budget($user);
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                [
-                    'budget_category_id' => 'invalid',
-                    'planned_amount' => 100000,
-                ]
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", [
+                'budget_category_id' => 'invalid',
+                'planned_amount' => 100000,
+            ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['budget_category_id']);
     }
@@ -284,12 +262,9 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                [
-                    'budget_category_id' => $category->id,
-                ]
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", [
+                'budget_category_id' => $category->id,
+            ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['planned_amount']);
     }
@@ -301,12 +276,9 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                $this->itemData($category, [
-                    'planned_amount' => -1,
-                ])
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", $this->itemData($category, [
+                'planned_amount' => -1,
+            ]))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['planned_amount']);
     }
@@ -318,12 +290,9 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                $this->itemData($category, [
-                    'actual_amount' => -1,
-                ])
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", $this->itemData($category, [
+                'actual_amount' => -1,
+            ]))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['actual_amount']);
     }
@@ -335,13 +304,10 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                [
-                    'budget_category_id' => $category->id,
-                    'planned_amount' => 100000,
-                ]
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", [
+                'budget_category_id' => $category->id,
+                'planned_amount' => 100000,
+            ])
             ->assertCreated();
     }
 
@@ -352,13 +318,10 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                [
-                    'budget_category_id' => $category->id,
-                    'planned_amount' => 100000,
-                ]
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", [
+                'budget_category_id' => $category->id,
+                'planned_amount' => 100000,
+            ])
             ->assertCreated();
     }
 
@@ -369,14 +332,11 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                [
-                    'budget_category_id' => $category->id,
-                    'planned_amount' => 100000,
-                    'notes' => null,
-                ]
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", [
+                'budget_category_id' => $category->id,
+                'planned_amount' => 100000,
+                'notes' => null,
+            ])
             ->assertCreated();
     }
 
@@ -387,10 +347,7 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                $this->itemData($category)
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", $this->itemData($category))
             ->assertCreated();
     }
 
@@ -401,10 +358,7 @@ class BudgetItemTest extends TestCase
         $category = $this->category($user);
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                $this->itemData($category)
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", $this->itemData($category))
             ->assertCreated();
     }
 
@@ -417,10 +371,7 @@ class BudgetItemTest extends TestCase
         $category = $this->category($other);
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                $this->itemData($category)
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", $this->itemData($category))
             ->assertNotFound();
 
         $this->assertDatabaseCount('budget_items', 0);
@@ -438,10 +389,7 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budget->id}/items",
-                $this->itemData($category)
-            )
+            ->postJson("/api/v1/budgets/{$budget->id}/items", $this->itemData($category))
             ->assertConflict();
 
         $this->assertDatabaseCount('budget_items', 1);
@@ -456,17 +404,11 @@ class BudgetItemTest extends TestCase
         $category = $this->defaultCategory();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budgetA->id}/items",
-                $this->itemData($category)
-            )
+            ->postJson("/api/v1/budgets/{$budgetA->id}/items", $this->itemData($category))
             ->assertCreated();
 
         $this->auth($user)
-            ->postJson(
-                "/api/v1/budgets/{$budgetB->id}/items",
-                $this->itemData($category)
-            )
+            ->postJson("/api/v1/budgets/{$budgetB->id}/items", $this->itemData($category))
             ->assertCreated();
 
         $this->assertDatabaseCount('budget_items', 2);
@@ -490,9 +432,7 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->getJson(
-                "/api/v1/budgets/{$budget->id}/items/{$item->id}"
-            )
+            ->getJson("/api/v1/budgets/{$budget->id}/items/{$item->id}")
             ->assertOk()
             ->assertJsonPath('data.id', $item->id);
     }
@@ -511,9 +451,7 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($attacker)
-            ->getJson(
-                "/api/v1/budgets/{$budget->id}/items/{$item->id}"
-            )
+            ->getJson("/api/v1/budgets/{$budget->id}/items/{$item->id}")
             ->assertForbidden();
     }
 
@@ -532,9 +470,7 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->getJson(
-                "/api/v1/budgets/{$budgetA->id}/items/{$item->id}"
-            )
+            ->getJson("/api/v1/budgets/{$budgetA->id}/items/{$item->id}")
             ->assertNotFound();
     }
 
@@ -558,12 +494,9 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->patchJson(
-                "/api/v1/budgets/{$budget->id}/items/{$item->id}",
-                [
-                    'planned_amount' => 200000,
-                ]
-            )
+            ->patchJson("/api/v1/budgets/{$budget->id}/items/{$item->id}", [
+                'planned_amount' => 200000,
+            ])
             ->assertOk();
 
         $this->assertDatabaseHas('budget_items', [
@@ -588,12 +521,9 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->patchJson(
-                "/api/v1/budgets/{$budget->id}/items/{$item->id}",
-                [
-                    'actual_amount' => 60000,
-                ]
-            )
+            ->patchJson("/api/v1/budgets/{$budget->id}/items/{$item->id}", [
+                'actual_amount' => 60000,
+            ])
             ->assertOk();
 
         $item->refresh();
@@ -618,12 +548,9 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($attacker)
-            ->patchJson(
-                "/api/v1/budgets/{$budget->id}/items/{$item->id}",
-                [
-                    'planned_amount' => 999999,
-                ]
-            )
+            ->patchJson("/api/v1/budgets/{$budget->id}/items/{$item->id}", [
+                'planned_amount' => 999999,
+            ])
             ->assertForbidden();
 
         $this->assertDatabaseHas('budget_items', [
@@ -652,12 +579,9 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->patchJson(
-                "/api/v1/budgets/{$budget->id}/items/{$itemA->id}",
-                [
-                    'budget_category_id' => $categoryB->id,
-                ]
-            )
+            ->patchJson("/api/v1/budgets/{$budget->id}/items/{$itemA->id}", [
+                'budget_category_id' => $categoryB->id,
+            ])
             ->assertConflict();
     }
 
@@ -676,12 +600,9 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->patchJson(
-                "/api/v1/budgets/{$budget->id}/items/{$item->id}",
-                [
-                    'budget_category_id' => $categoryB->id,
-                ]
-            )
+            ->patchJson("/api/v1/budgets/{$budget->id}/items/{$item->id}", [
+                'budget_category_id' => $categoryB->id,
+            ])
             ->assertOk();
 
         $this->assertDatabaseHas('budget_items', [
@@ -709,9 +630,7 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->deleteJson(
-                "/api/v1/budgets/{$budget->id}/items/{$item->id}"
-            )
+            ->deleteJson("/api/v1/budgets/{$budget->id}/items/{$item->id}")
             ->assertOk();
 
         $this->assertDatabaseMissing('budget_items', [
@@ -733,9 +652,7 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($attacker)
-            ->deleteJson(
-                "/api/v1/budgets/{$budget->id}/items/{$item->id}"
-            )
+            ->deleteJson("/api/v1/budgets/{$budget->id}/items/{$item->id}")
             ->assertForbidden();
 
         $this->assertDatabaseHas('budget_items', [
@@ -758,9 +675,7 @@ class BudgetItemTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->deleteJson(
-                "/api/v1/budgets/{$budgetA->id}/items/{$item->id}"
-            )
+            ->deleteJson("/api/v1/budgets/{$budgetA->id}/items/{$item->id}")
             ->assertNotFound();
 
         $this->assertDatabaseHas('budget_items', [
@@ -774,9 +689,7 @@ class BudgetItemTest extends TestCase
         $budget = $this->budget($user);
 
         $this->auth($user)
-            ->getJson(
-                "/api/v1/budgets/{$budget->id}/items/".fake()->uuid()
-            )
+            ->getJson("/api/v1/budgets/{$budget->id}/items/".fake()->uuid())
             ->assertNotFound();
     }
 }

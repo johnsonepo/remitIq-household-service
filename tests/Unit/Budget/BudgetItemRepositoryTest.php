@@ -31,11 +31,8 @@ class BudgetItemRepositoryTest extends TestCase
         ]);
     }
 
-    private function budget(
-        User $user,
-        Household $household,
-        array $overrides = []
-    ): Budget {
+    private function budget(User $user, Household $household, array $overrides = []): Budget
+    {
         return Budget::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -49,11 +46,8 @@ class BudgetItemRepositoryTest extends TestCase
         ], $overrides));
     }
 
-    private function item(
-        Budget $budget,
-        BudgetCategory $category,
-        array $overrides = []
-    ): BudgetItem {
+    private function item(Budget $budget, BudgetCategory $category, array $overrides = []): BudgetItem
+    {
         return BudgetItem::factory()->create(array_merge([
             'budget_id' => $budget->id,
             'budget_category_id' => $category->id,
@@ -157,10 +151,7 @@ class BudgetItemRepositoryTest extends TestCase
 
         $this->assertNotNull($result);
         $this->assertTrue($result->relationLoaded('category'));
-        $this->assertSame(
-            $category->id,
-            $result->category->id
-        );
+        $this->assertSame($category->id, $result->category->id);
     }
 
     /*
@@ -179,10 +170,7 @@ class BudgetItemRepositoryTest extends TestCase
 
         $item = $this->item($budget, $category);
 
-        $result = $this->repository->forBudgetCategory(
-            $budget->id,
-            $category->id
-        );
+        $result = $this->repository->forBudgetCategory($budget->id, $category->id);
 
         $this->assertNotNull($result);
         $this->assertSame($item->id, $result->id);
@@ -196,10 +184,7 @@ class BudgetItemRepositoryTest extends TestCase
 
         $category = $this->category();
 
-        $result = $this->repository->forBudgetCategory(
-            $budget->id,
-            $category->id
-        );
+        $result = $this->repository->forBudgetCategory($budget->id, $category->id);
 
         $this->assertNull($result);
     }
@@ -219,10 +204,7 @@ class BudgetItemRepositoryTest extends TestCase
 
         $this->item($otherBudget, $category);
 
-        $result = $this->repository->forBudgetCategory(
-            $budget->id,
-            $category->id
-        );
+        $result = $this->repository->forBudgetCategory($budget->id, $category->id);
 
         $this->assertNull($result);
     }
@@ -237,17 +219,11 @@ class BudgetItemRepositoryTest extends TestCase
 
         $this->item($budget, $category);
 
-        $result = $this->repository->forBudgetCategory(
-            $budget->id,
-            $category->id
-        );
+        $result = $this->repository->forBudgetCategory($budget->id, $category->id);
 
         $this->assertNotNull($result);
         $this->assertTrue($result->relationLoaded('category'));
-        $this->assertSame(
-            $category->id,
-            $result->category->id
-        );
+        $this->assertSame($category->id, $result->category->id);
     }
 
     /*
@@ -266,10 +242,7 @@ class BudgetItemRepositoryTest extends TestCase
 
         $item = $this->item($budget, $category);
 
-        $result = $this->repository->findForBudget(
-            $budget->id,
-            $item->id
-        );
+        $result = $this->repository->findForBudget($budget->id, $item->id);
 
         $this->assertNotNull($result);
         $this->assertSame($item->id, $result->id);
@@ -281,10 +254,7 @@ class BudgetItemRepositoryTest extends TestCase
         $household = $this->household($user);
         $budget = $this->budget($user, $household);
 
-        $result = $this->repository->findForBudget(
-            $budget->id,
-            '00000000-0000-0000-0000-000000000000'
-        );
+        $result = $this->repository->findForBudget($budget->id, '00000000-0000-0000-0000-000000000000');
 
         $this->assertNull($result);
     }
@@ -304,10 +274,7 @@ class BudgetItemRepositoryTest extends TestCase
 
         $item = $this->item($otherBudget, $category);
 
-        $result = $this->repository->findForBudget(
-            $budget->id,
-            $item->id
-        );
+        $result = $this->repository->findForBudget($budget->id, $item->id);
 
         $this->assertNull($result);
     }
@@ -322,16 +289,10 @@ class BudgetItemRepositoryTest extends TestCase
 
         $item = $this->item($budget, $category);
 
-        $result = $this->repository->findForBudget(
-            $budget->id,
-            $item->id
-        );
+        $result = $this->repository->findForBudget($budget->id, $item->id);
 
         $this->assertNotNull($result);
         $this->assertTrue($result->relationLoaded('category'));
-        $this->assertSame(
-            $category->id,
-            $result->category->id
-        );
+        $this->assertSame($category->id, $result->category->id);
     }
 }

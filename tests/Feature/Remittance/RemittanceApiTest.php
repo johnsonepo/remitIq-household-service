@@ -44,14 +44,14 @@ class RemittanceApiTest extends TestCase
 
     public function test_history_requires_authentication(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/history');
+        $response = $this->getJson(self::BASE_URL.'/history');
 
         $response->assertUnauthorized();
     }
 
     public function test_analytics_requires_authentication(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/analytics');
+        $response = $this->getJson(self::BASE_URL.'/analytics');
 
         $response->assertUnauthorized();
     }
@@ -60,9 +60,7 @@ class RemittanceApiTest extends TestCase
     {
         $household = Household::factory()->create();
 
-        $response = $this->getJson(
-            self::BASE_URL . '/household/' . $household->id
-        );
+        $response = $this->getJson(self::BASE_URL.'/household/'.$household->id);
 
         $response->assertUnauthorized();
     }
@@ -71,10 +69,7 @@ class RemittanceApiTest extends TestCase
     {
         $household = Household::factory()->create();
 
-        $response = $this->postJson(
-            self::BASE_URL,
-            $this->validCreatePayload($household)
-        );
+        $response = $this->postJson(self::BASE_URL, $this->validCreatePayload($household));
 
         $response->assertUnauthorized();
     }
@@ -85,9 +80,7 @@ class RemittanceApiTest extends TestCase
         $household = $this->createHousehold($user);
         $remittance = $this->createRemittance($user, $household);
 
-        $response = $this->getJson(
-            self::BASE_URL . '/' . $remittance->id
-        );
+        $response = $this->getJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertUnauthorized();
     }
@@ -98,12 +91,9 @@ class RemittanceApiTest extends TestCase
         $household = $this->createHousehold($user);
         $remittance = $this->createRemittance($user, $household);
 
-        $response = $this->putJson(
-            self::BASE_URL . '/' . $remittance->id,
-            [
-                'amount_sent' => 250,
-            ]
-        );
+        $response = $this->putJson(self::BASE_URL.'/'.$remittance->id, [
+            'amount_sent' => 250,
+        ]);
 
         $response->assertUnauthorized();
     }
@@ -114,9 +104,7 @@ class RemittanceApiTest extends TestCase
         $household = $this->createHousehold($user);
         $remittance = $this->createRemittance($user, $household);
 
-        $response = $this->deleteJson(
-            self::BASE_URL . '/' . $remittance->id
-        );
+        $response = $this->deleteJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertUnauthorized();
     }
@@ -133,25 +121,14 @@ class RemittanceApiTest extends TestCase
 
         $household = $this->createHousehold($user);
 
-        $ownedOne = $this->createRemittance(
-            $user,
-            $household,
-            ['sent_at' => '2026-08-20']
-        );
+        $ownedOne = $this->createRemittance($user, $household, ['sent_at' => '2026-08-20']);
 
-        $ownedTwo = $this->createRemittance(
-            $user,
-            $household,
-            ['sent_at' => '2026-08-21']
-        );
+        $ownedTwo = $this->createRemittance($user, $household, ['sent_at' => '2026-08-21']);
 
         $otherUser = User::factory()->create();
         $otherHousehold = $this->createHousehold($otherUser);
 
-        $otherRemittance = $this->createRemittance(
-            $otherUser,
-            $otherHousehold
-        );
+        $otherRemittance = $this->createRemittance($otherUser, $otherHousehold);
 
         $response = $this->authenticated($user)
             ->getJson(self::BASE_URL);
@@ -198,15 +175,9 @@ class RemittanceApiTest extends TestCase
          * Same household must not matter. Remittance ownership is based
          * on remittance.user_id.
          */
-        $userRemittance = $this->createRemittance(
-            $user,
-            $household
-        );
+        $userRemittance = $this->createRemittance($user, $household);
 
-        $otherRemittance = $this->createRemittance(
-            $otherUser,
-            $household
-        );
+        $otherRemittance = $this->createRemittance($otherUser, $household);
 
         $response = $this->authenticated($user)
             ->getJson(self::BASE_URL);
@@ -226,17 +197,9 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $old = $this->createRemittance(
-            $user,
-            $household,
-            ['sent_at' => '2026-08-01']
-        );
+        $old = $this->createRemittance($user, $household, ['sent_at' => '2026-08-01']);
 
-        $new = $this->createRemittance(
-            $user,
-            $household,
-            ['sent_at' => '2026-08-20']
-        );
+        $new = $this->createRemittance($user, $household, ['sent_at' => '2026-08-20']);
 
         $response = $this->authenticated($user)
             ->getJson(self::BASE_URL);
@@ -248,15 +211,9 @@ class RemittanceApiTest extends TestCase
             ->values()
             ->all();
 
-        $this->assertSame(
-            $new->id,
-            $ids[0]
-        );
+        $this->assertSame($new->id, $ids[0]);
 
-        $this->assertSame(
-            $old->id,
-            $ids[1]
-        );
+        $this->assertSame($old->id, $ids[1]);
     }
 
     public function test_index_includes_expected_remittance_relationships(): void
@@ -265,13 +222,9 @@ class RemittanceApiTest extends TestCase
         $household = $this->createHousehold($user);
         $provider = TransferProvider::factory()->create();
 
-        $remittance = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'transfer_provider_id' => $provider->id,
-            ]
-        );
+        $remittance = $this->createRemittance($user, $household, [
+            'transfer_provider_id' => $provider->id,
+        ]);
 
         $response = $this->authenticated($user)
             ->getJson(self::BASE_URL);
@@ -301,20 +254,12 @@ class RemittanceApiTest extends TestCase
         $household = $this->createHousehold($user);
         $otherHousehold = $this->createHousehold($user);
 
-        $matching = $this->createRemittance(
-            $user,
-            $household
-        );
+        $matching = $this->createRemittance($user, $household);
 
-        $other = $this->createRemittance(
-            $user,
-            $otherHousehold
-        );
+        $other = $this->createRemittance($user, $otherHousehold);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL . '/household/' . $household->id
-            );
+            ->getJson(self::BASE_URL.'/household/'.$household->id);
 
         $response->assertOk();
 
@@ -333,20 +278,12 @@ class RemittanceApiTest extends TestCase
 
         $household = $this->createHousehold($user);
 
-        $userRemittance = $this->createRemittance(
-            $user,
-            $household
-        );
+        $userRemittance = $this->createRemittance($user, $household);
 
-        $otherRemittance = $this->createRemittance(
-            $otherUser,
-            $household
-        );
+        $otherRemittance = $this->createRemittance($otherUser, $household);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL . '/household/' . $household->id
-            );
+            ->getJson(self::BASE_URL.'/household/'.$household->id);
 
         $response->assertOk();
 
@@ -365,15 +302,10 @@ class RemittanceApiTest extends TestCase
 
         $household = $this->createHousehold($otherUser);
 
-        $this->createRemittance(
-            $otherUser,
-            $household
-        );
+        $this->createRemittance($otherUser, $household);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL . '/household/' . $household->id
-            );
+            ->getJson(self::BASE_URL.'/household/'.$household->id);
 
         $response->assertForbidden();
     }
@@ -390,12 +322,9 @@ class RemittanceApiTest extends TestCase
         $household = $this->createHousehold($user);
         $provider = TransferProvider::factory()->create();
 
-        $payload = $this->validCreatePayload(
-            $household,
-            [
-                'transfer_provider_id' => $provider->id,
-            ]
-        );
+        $payload = $this->validCreatePayload($household, [
+            'transfer_provider_id' => $provider->id,
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -426,12 +355,9 @@ class RemittanceApiTest extends TestCase
 
         $household = $this->createHousehold($user);
 
-        $payload = $this->validCreatePayload(
-            $household,
-            [
-                'user_id' => $attacker->id,
-            ]
-        );
+        $payload = $this->validCreatePayload($household, [
+            'user_id' => $attacker->id,
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -457,10 +383,7 @@ class RemittanceApiTest extends TestCase
         $household = $this->createHousehold($otherUser);
 
         $response = $this->authenticated($user)
-            ->postJson(
-                self::BASE_URL,
-                $this->validCreatePayload($household)
-            );
+            ->postJson(self::BASE_URL, $this->validCreatePayload($household));
 
         $response->assertForbidden();
 
@@ -475,12 +398,9 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $payload = $this->validCreatePayload(
-            $household,
-            [
-                'transfer_provider_id' => null,
-            ]
-        );
+        $payload = $this->validCreatePayload($household, [
+            'transfer_provider_id' => null,
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -505,15 +425,10 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $remittance = $this->createRemittance(
-            $user,
-            $household
-        );
+        $remittance = $this->createRemittance($user, $household);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL . '/' . $remittance->id
-            );
+            ->getJson(self::BASE_URL.'/'.$remittance->id);
 
         $response
             ->assertOk()
@@ -529,15 +444,10 @@ class RemittanceApiTest extends TestCase
 
         $household = $this->createHousehold($otherUser);
 
-        $remittance = $this->createRemittance(
-            $otherUser,
-            $household
-        );
+        $remittance = $this->createRemittance($otherUser, $household);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL . '/' . $remittance->id
-            );
+            ->getJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertForbidden();
     }
@@ -549,9 +459,7 @@ class RemittanceApiTest extends TestCase
         $unknownId = '00000000-0000-0000-0000-000000000000';
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL . '/' . $unknownId
-            );
+            ->getJson(self::BASE_URL.'/'.$unknownId);
 
         $response->assertNotFound();
     }
@@ -561,9 +469,7 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL . '/not-a-uuid'
-            );
+            ->getJson(self::BASE_URL.'/not-a-uuid');
 
         $response->assertNotFound();
     }
@@ -579,25 +485,18 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $remittance = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'amount_sent' => 100,
-                'amount_received' => 60000,
-                'exchange_rate' => 600,
-            ]
-        );
+        $remittance = $this->createRemittance($user, $household, [
+            'amount_sent' => 100,
+            'amount_received' => 60000,
+            'exchange_rate' => 600,
+        ]);
 
         $response = $this->authenticated($user)
-            ->putJson(
-                self::BASE_URL . '/' . $remittance->id,
-                [
-                    'amount_sent' => 250,
-                    'amount_received' => 150000,
-                    'exchange_rate' => 600,
-                ]
-            );
+            ->putJson(self::BASE_URL.'/'.$remittance->id, [
+                'amount_sent' => 250,
+                'amount_received' => 150000,
+                'exchange_rate' => 600,
+            ]);
 
         $response
             ->assertOk()
@@ -616,23 +515,16 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $remittance = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'amount_sent' => 100,
-                'amount_received' => 60000,
-                'notes' => 'Original notes',
-            ]
-        );
+        $remittance = $this->createRemittance($user, $household, [
+            'amount_sent' => 100,
+            'amount_received' => 60000,
+            'notes' => 'Original notes',
+        ]);
 
         $response = $this->authenticated($user)
-            ->patchJson(
-                self::BASE_URL . '/' . $remittance->id,
-                [
-                    'amount_sent' => 200,
-                ]
-            );
+            ->patchJson(self::BASE_URL.'/'.$remittance->id, [
+                'amount_sent' => 200,
+            ]);
 
         $response->assertOk();
 
@@ -651,21 +543,14 @@ class RemittanceApiTest extends TestCase
 
         $household = $this->createHousehold($otherUser);
 
-        $remittance = $this->createRemittance(
-            $otherUser,
-            $household,
-            [
-                'amount_sent' => 100,
-            ]
-        );
+        $remittance = $this->createRemittance($otherUser, $household, [
+            'amount_sent' => 100,
+        ]);
 
         $response = $this->authenticated($user)
-            ->putJson(
-                self::BASE_URL . '/' . $remittance->id,
-                [
-                    'amount_sent' => 999,
-                ]
-            );
+            ->putJson(self::BASE_URL.'/'.$remittance->id, [
+                'amount_sent' => 999,
+            ]);
 
         $response->assertForbidden();
 
@@ -686,15 +571,10 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $remittance = $this->createRemittance(
-            $user,
-            $household
-        );
+        $remittance = $this->createRemittance($user, $household);
 
         $response = $this->authenticated($user)
-            ->deleteJson(
-                self::BASE_URL . '/' . $remittance->id
-            );
+            ->deleteJson(self::BASE_URL.'/'.$remittance->id);
 
         $response
             ->assertOk()
@@ -712,15 +592,10 @@ class RemittanceApiTest extends TestCase
 
         $household = $this->createHousehold($otherUser);
 
-        $remittance = $this->createRemittance(
-            $otherUser,
-            $household
-        );
+        $remittance = $this->createRemittance($otherUser, $household);
 
         $response = $this->authenticated($user)
-            ->deleteJson(
-                self::BASE_URL . '/' . $remittance->id
-            );
+            ->deleteJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertForbidden();
 
@@ -735,15 +610,9 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $deleted = $this->createRemittance(
-            $user,
-            $household
-        );
+        $deleted = $this->createRemittance($user, $household);
 
-        $active = $this->createRemittance(
-            $user,
-            $household
-        );
+        $active = $this->createRemittance($user, $household);
 
         $deleted->delete();
 
@@ -771,13 +640,10 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $remittance = $this->createRemittance(
-            $user,
-            $household
-        );
+        $remittance = $this->createRemittance($user, $household);
 
         $response = $this->authenticated($user)
-            ->getJson(self::BASE_URL . '/history');
+            ->getJson(self::BASE_URL.'/history');
 
         $response
             ->assertOk()
@@ -799,20 +665,12 @@ class RemittanceApiTest extends TestCase
         $householdOne = $this->createHousehold($user);
         $householdTwo = $this->createHousehold($user);
 
-        $matching = $this->createRemittance(
-            $user,
-            $householdOne
-        );
+        $matching = $this->createRemittance($user, $householdOne);
 
-        $other = $this->createRemittance(
-            $user,
-            $householdTwo
-        );
+        $other = $this->createRemittance($user, $householdTwo);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL . '/history?household_id=' . $householdOne->id
-            );
+            ->getJson(self::BASE_URL.'/history?household_id='.$householdOne->id);
 
         $response->assertOk();
 
@@ -832,36 +690,24 @@ class RemittanceApiTest extends TestCase
         $providerOne = TransferProvider::factory()->create();
         $providerTwo = TransferProvider::factory()->create();
 
-        $matching = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'transfer_provider_id' => $providerOne->id,
-            ]
-        );
+        $matching = $this->createRemittance($user, $household, [
+            'transfer_provider_id' => $providerOne->id,
+        ]);
 
-        $other = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'transfer_provider_id' => $providerTwo->id,
-            ]
-        );
+        $other = $this->createRemittance($user, $household, [
+            'transfer_provider_id' => $providerTwo->id,
+        ]);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL .
-                '?transfer_provider_id=' . $providerOne->id
-            );
+            ->getJson(self::BASE_URL.
+                '?transfer_provider_id='.$providerOne->id);
 
         /*
          * This endpoint is history, not index.
          */
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL .
-                '/history?transfer_provider_id=' . $providerOne->id
-            );
+            ->getJson(self::BASE_URL.
+                '/history?transfer_provider_id='.$providerOne->id);
 
         $response->assertOk();
 
@@ -878,35 +724,21 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $before = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'sent_at' => '2026-07-01',
-            ]
-        );
+        $before = $this->createRemittance($user, $household, [
+            'sent_at' => '2026-07-01',
+        ]);
 
-        $inside = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'sent_at' => '2026-08-15',
-            ]
-        );
+        $inside = $this->createRemittance($user, $household, [
+            'sent_at' => '2026-08-15',
+        ]);
 
-        $after = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'sent_at' => '2026-09-01',
-            ]
-        );
+        $after = $this->createRemittance($user, $household, [
+            'sent_at' => '2026-09-01',
+        ]);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL .
-                '/history?from=2026-08-01&to=2026-08-31'
-            );
+            ->getJson(self::BASE_URL.
+                '/history?from=2026-08-01&to=2026-08-31');
 
         $response->assertOk();
 
@@ -927,10 +759,8 @@ class RemittanceApiTest extends TestCase
         $household = $this->createHousehold($otherUser);
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL .
-                '/history?household_id=' . $household->id
-            );
+            ->getJson(self::BASE_URL.
+                '/history?household_id='.$household->id);
 
         $response->assertForbidden();
     }
@@ -945,9 +775,7 @@ class RemittanceApiTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $payload = $this->validCreatePayload(
-            Household::factory()->create()
-        );
+        $payload = $this->validCreatePayload(Household::factory()->create());
 
         unset($payload['household_id']);
 
@@ -965,12 +793,9 @@ class RemittanceApiTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $payload = $this->validCreatePayload(
-            Household::factory()->create(),
-            [
-                'household_id' => 'not-a-uuid',
-            ]
-        );
+        $payload = $this->validCreatePayload(Household::factory()->create(), [
+            'household_id' => 'not-a-uuid',
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -986,12 +811,9 @@ class RemittanceApiTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $payload = $this->validCreatePayload(
-            Household::factory()->create(),
-            [
-                'household_id' => '00000000-0000-0000-0000-000000000000',
-            ]
-        );
+        $payload = $this->validCreatePayload(Household::factory()->create(), [
+            'household_id' => '00000000-0000-0000-0000-000000000000',
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -1008,12 +830,9 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $payload = $this->validCreatePayload(
-            $household,
-            [
-                'amount_sent' => 0,
-            ]
-        );
+        $payload = $this->validCreatePayload($household, [
+            'amount_sent' => 0,
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -1030,12 +849,9 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $payload = $this->validCreatePayload(
-            $household,
-            [
-                'amount_received' => 0,
-            ]
-        );
+        $payload = $this->validCreatePayload($household, [
+            'amount_received' => 0,
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -1052,12 +868,9 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $payload = $this->validCreatePayload(
-            $household,
-            [
-                'exchange_rate' => 0,
-            ]
-        );
+        $payload = $this->validCreatePayload($household, [
+            'exchange_rate' => 0,
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -1074,12 +887,9 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $payload = $this->validCreatePayload(
-            $household,
-            [
-                'sent_currency_code' => 'usd',
-            ]
-        );
+        $payload = $this->validCreatePayload($household, [
+            'sent_currency_code' => 'usd',
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -1096,12 +906,9 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $payload = $this->validCreatePayload(
-            $household,
-            [
-                'sent_at' => '20-08-2026',
-            ]
-        );
+        $payload = $this->validCreatePayload($household, [
+            'sent_at' => '20-08-2026',
+        ]);
 
         $response = $this->authenticated($user)
             ->postJson(self::BASE_URL, $payload);
@@ -1118,22 +925,15 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $remittance = $this->createRemittance(
-            $user,
-            $household,
-            [
-                'amount_sent' => 100,
-                'notes' => 'Keep this',
-            ]
-        );
+        $remittance = $this->createRemittance($user, $household, [
+            'amount_sent' => 100,
+            'notes' => 'Keep this',
+        ]);
 
         $response = $this->authenticated($user)
-            ->patchJson(
-                self::BASE_URL . '/' . $remittance->id,
-                [
-                    'notes' => 'Updated',
-                ]
-            );
+            ->patchJson(self::BASE_URL.'/'.$remittance->id, [
+                'notes' => 'Updated',
+            ]);
 
         $response->assertOk();
 
@@ -1149,18 +949,12 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $remittance = $this->createRemittance(
-            $user,
-            $household
-        );
+        $remittance = $this->createRemittance($user, $household);
 
         $response = $this->authenticated($user)
-            ->putJson(
-                self::BASE_URL . '/' . $remittance->id,
-                [
-                    'amount_sent' => -1,
-                ]
-            );
+            ->putJson(self::BASE_URL.'/'.$remittance->id, [
+                'amount_sent' => -1,
+            ]);
 
         $response
             ->assertUnprocessable()
@@ -1174,10 +968,8 @@ class RemittanceApiTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->authenticated($user)
-            ->getJson(
-                self::BASE_URL .
-                '/history?from=2026-08-20&to=2026-08-01'
-            );
+            ->getJson(self::BASE_URL.
+                '/history?from=2026-08-20&to=2026-08-01');
 
         /*
          * RemittanceHistoryRequest currently does not define
@@ -1208,21 +1000,16 @@ class RemittanceApiTest extends TestCase
         ]);
     }
 
-    private function createRemittance(
-        User $user,
-        Household $household,
-        array $overrides = []
-    ): Remittance {
+    private function createRemittance(User $user, Household $household, array $overrides = []): Remittance
+    {
         return Remittance::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
         ], $overrides));
     }
 
-    private function validCreatePayload(
-        Household $household,
-        array $overrides = []
-    ): array {
+    private function validCreatePayload(Household $household, array $overrides = []): array
+    {
         return array_merge([
             'household_id' => $household->id,
             'transfer_provider_id' => TransferProvider::factory()->create()->id,

@@ -43,10 +43,7 @@ class RemittanceServiceTest extends TestCase
         $this->householdRepository = Mockery::mock(HouseholdRepository::class);
 
         $this->app->instance(RemittanceRepository::class, $this->repository);
-        $this->app->instance(
-            HouseholdRepository::class,
-            $this->householdRepository
-        );
+        $this->app->instance(HouseholdRepository::class, $this->householdRepository);
 
         $this->service = app(RemittanceService::class);
     }
@@ -65,21 +62,16 @@ class RemittanceServiceTest extends TestCase
         ]);
     }
 
-    private function remittance(
-        User $user,
-        Household $household,
-        array $overrides = []
-    ): Remittance {
+    private function remittance(User $user, Household $household, array $overrides = []): Remittance
+    {
         return Remittance::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
         ], $overrides));
     }
 
-    private function remittanceData(
-        Household $household,
-        array $overrides = []
-    ): array {
+    private function remittanceData(Household $household, array $overrides = []): array
+    {
         return array_merge([
             'household_id' => $household->id,
             'transfer_provider_id' => TransferProvider::factory()->create()->id,
@@ -105,10 +97,7 @@ class RemittanceServiceTest extends TestCase
         $user = User::factory()->create();
 
         $remittances = new Collection([
-            $this->remittance(
-                $user,
-                $this->household($user)
-            ),
+            $this->remittance($user, $this->household($user)),
         ]);
 
         $this->repository
@@ -149,10 +138,7 @@ class RemittanceServiceTest extends TestCase
             ->with($user->id, $household->id)
             ->andReturn($remittances);
 
-        $result = $this->service->forHousehold(
-            $user->id,
-            $household->id
-        );
+        $result = $this->service->forHousehold($user->id, $household->id);
 
         $this->assertSame($remittances, $result);
     }
@@ -173,10 +159,7 @@ class RemittanceServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->forHousehold(
-            $user->id,
-            $household->id
-        );
+        $this->service->forHousehold($user->id, $household->id);
     }
 
     /*
@@ -191,11 +174,7 @@ class RemittanceServiceTest extends TestCase
         $household = $this->household($user);
         $data = $this->remittanceData($household);
 
-        $remittance = $this->remittance(
-            $user,
-            $household,
-            $data
-        );
+        $remittance = $this->remittance($user, $household, $data);
 
         $this->householdRepository
             ->shouldReceive('isAccessibleByUser')
@@ -212,10 +191,7 @@ class RemittanceServiceTest extends TestCase
             }))
             ->andReturn($remittance);
 
-        $result = $this->service->create(
-            $user->id,
-            $data
-        );
+        $result = $this->service->create($user->id, $data);
 
         $this->assertSame($remittance->id, $result->id);
 
@@ -239,10 +215,7 @@ class RemittanceServiceTest extends TestCase
             'user_id' => $attacker->id,
         ]);
 
-        $remittance = $this->remittance(
-            $user,
-            $household
-        );
+        $remittance = $this->remittance($user, $household);
 
         $this->householdRepository
             ->shouldReceive('isAccessibleByUser')
@@ -258,15 +231,9 @@ class RemittanceServiceTest extends TestCase
             }))
             ->andReturn($remittance);
 
-        $this->service->create(
-            $user->id,
-            $data
-        );
+        $this->service->create($user->id, $data);
 
-        $this->assertSame(
-            $user->id,
-            $remittance->user_id
-        );
+        $this->assertSame($user->id, $remittance->user_id);
     }
 
     public function test_create_rejects_inaccessible_household(): void
@@ -286,10 +253,7 @@ class RemittanceServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->create(
-            $user->id,
-            $data
-        );
+        $this->service->create($user->id, $data);
     }
 
     /*
@@ -302,10 +266,7 @@ class RemittanceServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $household = $this->household($user);
-        $remittance = $this->remittance(
-            $user,
-            $household
-        );
+        $remittance = $this->remittance($user, $household);
 
         $this->repository
             ->shouldReceive('findForUser')
@@ -313,15 +274,9 @@ class RemittanceServiceTest extends TestCase
             ->with($user->id, $remittance->id)
             ->andReturn($remittance);
 
-        $result = $this->service->findForUser(
-            $user->id,
-            $remittance->id
-        );
+        $result = $this->service->findForUser($user->id, $remittance->id);
 
-        $this->assertSame(
-            $remittance->id,
-            $result->id
-        );
+        $this->assertSame($remittance->id, $result->id);
     }
 
     public function test_find_for_user_rejects_missing_remittance(): void
@@ -336,10 +291,7 @@ class RemittanceServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->findForUser(
-            $user->id,
-            'missing-id'
-        );
+        $this->service->findForUser($user->id, 'missing-id');
     }
 
     /*
@@ -352,39 +304,21 @@ class RemittanceServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $household = $this->household($user);
-        $remittance = $this->remittance(
-            $user,
-            $household
-        );
+        $remittance = $this->remittance($user, $household);
 
-        $result = $this->service->update(
-            $remittance,
-            [
-                'amount_sent' => 250,
-                'amount_received' => 150000,
-                'exchange_rate' => 600,
-            ]
-        );
+        $result = $this->service->update($remittance, [
+            'amount_sent' => 250,
+            'amount_received' => 150000,
+            'exchange_rate' => 600,
+        ]);
 
-        $this->assertSame(
-            $remittance->id,
-            $result->id
-        );
+        $this->assertSame($remittance->id, $result->id);
 
-        $this->assertSame(
-            250.0,
-            (float) $result->amount_sent
-        );
+        $this->assertSame(250.0, (float) $result->amount_sent);
 
-        $this->assertSame(
-            150000.0,
-            (float) $result->amount_received
-        );
+        $this->assertSame(150000.0, (float) $result->amount_received);
 
-        $this->assertSame(
-            600.0,
-            (float) $result->exchange_rate
-        );
+        $this->assertSame(600.0, (float) $result->exchange_rate);
     }
 
     /*
@@ -398,21 +332,15 @@ class RemittanceServiceTest extends TestCase
         $user = User::factory()->create();
         $household = $this->household($user);
 
-        $remittance = $this->remittance(
-            $user,
-            $household
-        );
+        $remittance = $this->remittance($user, $household);
 
         $result = $this->service->delete($remittance);
 
         $this->assertTrue($result);
 
-        $this->assertSoftDeleted(
-            'remittances',
-            [
-                'id' => $remittance->id,
-            ]
-        );
+        $this->assertSoftDeleted('remittances', [
+            'id' => $remittance->id,
+        ]);
     }
 
     /*
@@ -425,7 +353,7 @@ class RemittanceServiceTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $remittances = new Collection();
+        $remittances = new Collection;
 
         $this->repository
             ->shouldReceive('historyForUser')
@@ -433,14 +361,9 @@ class RemittanceServiceTest extends TestCase
             ->with($user->id, [])
             ->andReturn($remittances);
 
-        $result = $this->service->historyForUser(
-            $user->id
-        );
+        $result = $this->service->historyForUser($user->id);
 
-        $this->assertSame(
-            $remittances,
-            $result
-        );
+        $this->assertSame($remittances, $result);
     }
 
     public function test_history_for_user_allows_accessible_household_filter(): void
@@ -455,7 +378,7 @@ class RemittanceServiceTest extends TestCase
             'to' => '2026-08-31',
         ];
 
-        $remittances = new Collection();
+        $remittances = new Collection;
 
         $this->householdRepository
             ->shouldReceive('isAccessibleByUser')
@@ -469,15 +392,9 @@ class RemittanceServiceTest extends TestCase
             ->with($user->id, $filters)
             ->andReturn($remittances);
 
-        $result = $this->service->historyForUser(
-            $user->id,
-            $filters
-        );
+        $result = $this->service->historyForUser($user->id, $filters);
 
-        $this->assertSame(
-            $remittances,
-            $result
-        );
+        $this->assertSame($remittances, $result);
     }
 
     public function test_history_for_user_rejects_inaccessible_household_filter(): void
@@ -500,9 +417,6 @@ class RemittanceServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->historyForUser(
-            $user->id,
-            $filters
-        );
+        $this->service->historyForUser($user->id, $filters);
     }
 }

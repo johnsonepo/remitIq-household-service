@@ -16,7 +16,7 @@ class NotificationServiceClientTest extends TestCase
     {
         parent::setUp();
 
-        $this->client = new NotificationServiceClient();
+        $this->client = new NotificationServiceClient;
 
         config()->set('services.notification.url', 'http://notification-service:4002');
         config()->set('services.notification.api_key', 'test-api-key');
@@ -25,19 +25,12 @@ class NotificationServiceClientTest extends TestCase
 
     private function event(): NotificationEvent
     {
-        return new NotificationEvent(
-            eventId: 'event-123',
-            eventType: 'REMITTANCE_CREATED',
-            userId: 'user-123',
-            source: 'household-service',
-            timestamp: '2026-08-22T12:00:00+00:00',
-            data: [
-                'remittanceId' => 'remittance-123',
-                'householdId' => 'household-123',
-                'amountSent' => 100,
-                'amountReceived' => 60000,
-            ],
-        );
+        return new NotificationEvent(eventId: 'event-123', eventType: 'REMITTANCE_CREATED', userId: 'user-123', source: 'household-service', timestamp: '2026-08-22T12:00:00+00:00', data: [
+            'remittanceId' => 'remittance-123',
+            'householdId' => 'household-123',
+            'amountSent' => 100,
+            'amountReceived' => 60000,
+        ], );
     }
 
     /*
@@ -76,7 +69,7 @@ class NotificationServiceClientTest extends TestCase
 
         $this->client->send($event);
 
-        Http::assertSent(function ($request) use ($event): bool {
+        Http::assertSent(function ($request): bool {
             $data = $request->data();
 
             return $data['eventId'] === 'event-123'
@@ -134,11 +127,7 @@ class NotificationServiceClientTest extends TestCase
         $this->client->send($this->event());
 
         Http::assertSent(function ($request): bool {
-            return in_array(
-                'application/json',
-                $request->header('Accept'),
-                true
-            );
+            return in_array('application/json', $request->header('Accept'), true);
         });
     }
 
@@ -149,11 +138,7 @@ class NotificationServiceClientTest extends TestCase
         $this->client->send($this->event());
 
         Http::assertSent(function ($request): bool {
-            return in_array(
-                'application/json',
-                $request->header('Content-Type'),
-                true
-            );
+            return in_array('application/json', $request->header('Content-Type'), true);
         });
     }
 
@@ -165,10 +150,7 @@ class NotificationServiceClientTest extends TestCase
 
     public function test_uses_configured_notification_url(): void
     {
-        config()->set(
-            'services.notification.url',
-            'http://custom-notification-service/events'
-        );
+        config()->set('services.notification.url', 'http://custom-notification-service/events');
 
         Http::fake();
 
@@ -179,7 +161,6 @@ class NotificationServiceClientTest extends TestCase
                 'http://custom-notification-service/events';
         });
     }
-
 
     /*
     |--------------------------------------------------------------------------

@@ -21,9 +21,8 @@ class BudgetCategoryRepositoryTest extends TestCase
         $this->repository = app(BudgetCategoryRepository::class);
     }
 
-    private function category(
-        array $overrides = []
-    ): BudgetCategory {
+    private function category(array $overrides = []): BudgetCategory
+    {
         return BudgetCategory::factory()->create($overrides);
     }
 

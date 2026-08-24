@@ -27,11 +27,8 @@ class RemittanceAuthorizationTest extends TestCase
         ]);
     }
 
-    private function remittance(
-        User $user,
-        Household $household,
-        array $overrides = []
-    ): Remittance {
+    private function remittance(User $user, Household $household, array $overrides = []): Remittance
+    {
         return Remittance::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -68,9 +65,7 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($user);
 
-        $response = $this->getJson(
-            self::BASE_URL.'/'.$remittance->id
-        );
+        $response = $this->getJson(self::BASE_URL.'/'.$remittance->id);
 
         $response
             ->assertOk()
@@ -87,9 +82,7 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($otherUser);
 
-        $response = $this->getJson(
-            self::BASE_URL.'/'.$remittance->id
-        );
+        $response = $this->getJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertForbidden();
     }
@@ -107,9 +100,7 @@ class RemittanceAuthorizationTest extends TestCase
         // authorization: RemittancePolicy is based on user ownership.
         $this->authenticate($member);
 
-        $response = $this->getJson(
-            self::BASE_URL.'/'.$remittance->id
-        );
+        $response = $this->getJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertForbidden();
     }
@@ -128,12 +119,9 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($user);
 
-        $response = $this->patchJson(
-            self::BASE_URL.'/'.$remittance->id,
-            [
-                'amount_sent' => 250,
-            ]
-        );
+        $response = $this->patchJson(self::BASE_URL.'/'.$remittance->id, [
+            'amount_sent' => 250,
+        ]);
 
         $response
             ->assertOk()
@@ -156,12 +144,9 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($otherUser);
 
-        $response = $this->patchJson(
-            self::BASE_URL.'/'.$remittance->id,
-            [
-                'amount_sent' => 999,
-            ]
-        );
+        $response = $this->patchJson(self::BASE_URL.'/'.$remittance->id, [
+            'amount_sent' => 999,
+        ]);
 
         $response->assertForbidden();
 
@@ -182,12 +167,9 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($member);
 
-        $response = $this->patchJson(
-            self::BASE_URL.'/'.$remittance->id,
-            [
-                'amount_sent' => 999,
-            ]
-        );
+        $response = $this->patchJson(self::BASE_URL.'/'.$remittance->id, [
+            'amount_sent' => 999,
+        ]);
 
         $response->assertForbidden();
     }
@@ -206,9 +188,7 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($user);
 
-        $response = $this->deleteJson(
-            self::BASE_URL.'/'.$remittance->id
-        );
+        $response = $this->deleteJson(self::BASE_URL.'/'.$remittance->id);
 
         $response
             ->assertOk()
@@ -229,9 +209,7 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($otherUser);
 
-        $response = $this->deleteJson(
-            self::BASE_URL.'/'.$remittance->id
-        );
+        $response = $this->deleteJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertForbidden();
 
@@ -251,9 +229,7 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($member);
 
-        $response = $this->deleteJson(
-            self::BASE_URL.'/'.$remittance->id
-        );
+        $response = $this->deleteJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertForbidden();
 
@@ -304,14 +280,9 @@ class RemittanceAuthorizationTest extends TestCase
         $this->getJson(self::BASE_URL.'/'.$remittance->id)
             ->assertForbidden();
 
-        $this->patchJson(
-            self::BASE_URL.'/'.$remittance->id,
-            ['amount_sent' => 999]
-        )->assertForbidden();
+        $this->patchJson(self::BASE_URL.'/'.$remittance->id, ['amount_sent' => 999])->assertForbidden();
 
-        $this->deleteJson(
-            self::BASE_URL.'/'.$remittance->id
-        )->assertForbidden();
+        $this->deleteJson(self::BASE_URL.'/'.$remittance->id)->assertForbidden();
     }
 
     /*
@@ -331,10 +302,7 @@ class RemittanceAuthorizationTest extends TestCase
 
         $payload = $this->createPayload($household);
 
-        $response = $this->postJson(
-            self::BASE_URL,
-            $payload
-        );
+        $response = $this->postJson(self::BASE_URL, $payload);
 
         $response->assertForbidden();
 
@@ -360,13 +328,10 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($attacker);
 
-        $response = $this->patchJson(
-            self::BASE_URL.'/'.$remittance->id,
-            [
-                'user_id' => $attacker->id,
-                'amount_sent' => 999,
-            ]
-        );
+        $response = $this->patchJson(self::BASE_URL.'/'.$remittance->id, [
+            'user_id' => $attacker->id,
+            'amount_sent' => 999,
+        ]);
 
         $response->assertForbidden();
 
@@ -388,9 +353,7 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($attacker);
 
-        $response = $this->deleteJson(
-            self::BASE_URL.'/'.$remittance->id
-        );
+        $response = $this->deleteJson(self::BASE_URL.'/'.$remittance->id);
 
         $response->assertNotFound();
     }
@@ -407,9 +370,7 @@ class RemittanceAuthorizationTest extends TestCase
 
         $this->authenticate($user);
 
-        $response = $this->getJson(
-            self::BASE_URL.'/'.fake()->uuid()
-        );
+        $response = $this->getJson(self::BASE_URL.'/'.fake()->uuid());
 
         $response->assertNotFound();
     }

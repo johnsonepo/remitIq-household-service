@@ -35,11 +35,8 @@ class RemittanceRepositoryTest extends TestCase
         return TransferProvider::factory()->create($overrides);
     }
 
-    private function remittance(
-        User $user,
-        Household $household,
-        array $overrides = []
-    ): Remittance {
+    private function remittance(User $user, Household $household, array $overrides = []): Remittance
+    {
         return Remittance::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -67,9 +64,7 @@ class RemittanceRepositoryTest extends TestCase
 
         $this->assertCount(1, $result);
         $this->assertTrue($result->contains('id', $owned->id));
-        $this->assertFalse(
-            $result->contains('user_id', $otherUser->id)
-        );
+        $this->assertFalse($result->contains('user_id', $otherUser->id));
     }
 
     public function test_for_user_returns_latest_sent_remittances_first(): void
@@ -134,10 +129,7 @@ class RemittanceRepositoryTest extends TestCase
         $this->remittance($user, $otherHousehold);
         $this->remittance($otherUser, $otherUsersHousehold);
 
-        $result = $this->repository->forUserHousehold(
-            $user->id,
-            $household->id
-        );
+        $result = $this->repository->forUserHousehold($user->id, $household->id);
 
         $this->assertCount(1, $result);
         $this->assertSame($matching->id, $result->first()->id);
@@ -156,10 +148,7 @@ class RemittanceRepositoryTest extends TestCase
             'sent_at' => '2026-08-01',
         ]);
 
-        $result = $this->repository->forUserHousehold(
-            $user->id,
-            $household->id
-        );
+        $result = $this->repository->forUserHousehold($user->id, $household->id);
 
         $this->assertCount(2, $result);
         $this->assertSame($newer->id, $result->first()->id);
@@ -179,10 +168,7 @@ class RemittanceRepositoryTest extends TestCase
 
         $remittance = $this->remittance($user, $household);
 
-        $result = $this->repository->findForUser(
-            $user->id,
-            $remittance->id
-        );
+        $result = $this->repository->findForUser($user->id, $remittance->id);
 
         $this->assertNotNull($result);
         $this->assertSame($remittance->id, $result->id);
@@ -195,15 +181,9 @@ class RemittanceRepositoryTest extends TestCase
 
         $household = $this->household($otherUser);
 
-        $remittance = $this->remittance(
-            $otherUser,
-            $household
-        );
+        $remittance = $this->remittance($otherUser, $household);
 
-        $result = $this->repository->findForUser(
-            $user->id,
-            $remittance->id
-        );
+        $result = $this->repository->findForUser($user->id, $remittance->id);
 
         $this->assertNull($result);
     }
@@ -212,10 +192,7 @@ class RemittanceRepositoryTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $result = $this->repository->findForUser(
-            $user->id,
-            '00000000-0000-0000-0000-000000000000'
-        );
+        $result = $this->repository->findForUser($user->id, '00000000-0000-0000-0000-000000000000');
 
         $this->assertNull($result);
     }
@@ -230,10 +207,7 @@ class RemittanceRepositoryTest extends TestCase
             'transfer_provider_id' => $provider->id,
         ]);
 
-        $result = $this->repository->findForUser(
-            $user->id,
-            $remittance->id
-        );
+        $result = $this->repository->findForUser($user->id, $remittance->id);
 
         $this->assertNotNull($result);
 
@@ -280,12 +254,9 @@ class RemittanceRepositoryTest extends TestCase
         $matching = $this->remittance($user, $household);
         $this->remittance($user, $otherHousehold);
 
-        $result = $this->repository->historyForUser(
-            $user->id,
-            [
-                'household_id' => $household->id,
-            ]
-        );
+        $result = $this->repository->historyForUser($user->id, [
+            'household_id' => $household->id,
+        ]);
 
         $this->assertCount(1, $result);
         $this->assertSame($matching->id, $result->first()->id);
@@ -307,12 +278,9 @@ class RemittanceRepositoryTest extends TestCase
             'transfer_provider_id' => $otherProvider->id,
         ]);
 
-        $result = $this->repository->historyForUser(
-            $user->id,
-            [
-                'transfer_provider_id' => $provider->id,
-            ]
-        );
+        $result = $this->repository->historyForUser($user->id, [
+            'transfer_provider_id' => $provider->id,
+        ]);
 
         $this->assertCount(1, $result);
         $this->assertSame($matching->id, $result->first()->id);
@@ -339,13 +307,10 @@ class RemittanceRepositoryTest extends TestCase
             'sent_at' => '2026-09-01',
         ]);
 
-        $result = $this->repository->historyForUser(
-            $user->id,
-            [
-                'from' => '2026-03-01',
-                'to' => '2026-06-30',
-            ]
-        );
+        $result = $this->repository->historyForUser($user->id, [
+            'from' => '2026-03-01',
+            'to' => '2026-06-30',
+        ]);
 
         $this->assertCount(2, $result);
 
@@ -385,15 +350,12 @@ class RemittanceRepositoryTest extends TestCase
             'sent_at' => '2026-07-01',
         ]);
 
-        $result = $this->repository->historyForUser(
-            $user->id,
-            [
-                'household_id' => $household->id,
-                'transfer_provider_id' => $provider->id,
-                'from' => '2026-05-01',
-                'to' => '2026-05-31',
-            ]
-        );
+        $result = $this->repository->historyForUser($user->id, [
+            'household_id' => $household->id,
+            'transfer_provider_id' => $provider->id,
+            'from' => '2026-05-01',
+            'to' => '2026-05-31',
+        ]);
 
         $this->assertCount(1, $result);
         $this->assertSame($matching->id, $result->first()->id);
@@ -597,15 +559,12 @@ class RemittanceRepositoryTest extends TestCase
             'sent_at' => '2026-07-10',
         ]);
 
-        $result = $this->repository->analyticsForUser(
-            $user->id,
-            [
-                'household_id' => $household->id,
-                'transfer_provider_id' => $provider->id,
-                'from' => '2026-05-01',
-                'to' => '2026-05-31',
-            ]
-        );
+        $result = $this->repository->analyticsForUser($user->id, [
+            'household_id' => $household->id,
+            'transfer_provider_id' => $provider->id,
+            'from' => '2026-05-01',
+            'to' => '2026-05-31',
+        ]);
 
         $this->assertSame(1, $result['summary']['count']);
         $this->assertSame(100.0, $result['summary']['total_sent']);

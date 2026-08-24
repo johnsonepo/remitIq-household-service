@@ -400,17 +400,9 @@ class BudgetHistoryTest extends TestCase
         $requestedHousehold = $this->createHousehold($user);
         $otherHousehold = $this->createHousehold($user);
 
-        $requestedBudget = $this->createBudget(
-            $user,
-            $requestedHousehold,
-            '2026-01-01'
-        );
+        $requestedBudget = $this->createBudget($user, $requestedHousehold, '2026-01-01');
 
-        $otherBudget = $this->createBudget(
-            $user,
-            $otherHousehold,
-            '2026-02-01'
-        );
+        $otherBudget = $this->createBudget($user, $otherHousehold, '2026-02-01');
 
         $response = $this->auth($user)
             ->getJson("/api/v1/budgets/history/{$requestedHousehold->id}");
@@ -432,17 +424,9 @@ class BudgetHistoryTest extends TestCase
 
         $category = $this->createCategory();
 
-        $requestedBudget = $this->createBudget(
-            $user,
-            $household,
-            '2026-01-01'
-        );
+        $requestedBudget = $this->createBudget($user, $household, '2026-01-01');
 
-        $otherBudget = $this->createBudget(
-            $user,
-            $household,
-            '2026-02-01'
-        );
+        $otherBudget = $this->createBudget($user, $household, '2026-02-01');
 
         $requestedItem = BudgetItem::factory()->create([
             'budget_id' => $requestedBudget->id,
@@ -483,11 +467,7 @@ class BudgetHistoryTest extends TestCase
 
         $household = $this->createHousehold($owner);
 
-        $this->createBudget(
-            $owner,
-            $household,
-            '2026-01-01'
-        );
+        $this->createBudget($owner, $household, '2026-01-01');
 
         $this->auth($attacker)
             ->getJson("/api/v1/budgets/history/{$household->id}")
@@ -516,11 +496,7 @@ class BudgetHistoryTest extends TestCase
 
         $household = $this->createHousehold($owner);
 
-        $budget = $this->createBudget(
-            $owner,
-            $household,
-            '2026-01-01'
-        );
+        $budget = $this->createBudget($owner, $household, '2026-01-01');
 
         $response = $this->auth($attacker)
             ->getJson("/api/v1/budgets/history/{$household->id}");
@@ -551,11 +527,7 @@ class BudgetHistoryTest extends TestCase
                 ->subMonths($month)
                 ->toDateString();
 
-            $budgets[$date] = $this->createBudget(
-                $user,
-                $household,
-                $date
-            );
+            $budgets[$date] = $this->createBudget($user, $household, $date);
         }
 
         $response = $this->auth($user)
@@ -623,15 +595,10 @@ class BudgetHistoryTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $budget = $this->createBudget(
-            $user,
-            $household,
-            '2026-01-01',
-            [
-                'currency_code' => 'USD',
-                'total_planned' => 250000,
-            ]
-        );
+        $budget = $this->createBudget($user, $household, '2026-01-01', [
+            'currency_code' => 'USD',
+            'total_planned' => 250000,
+        ]);
 
         $response = $this->auth($user)
             ->getJson("/api/v1/budgets/history/{$household->id}");
@@ -650,11 +617,7 @@ class BudgetHistoryTest extends TestCase
         $user = User::factory()->create();
         $household = $this->createHousehold($user);
 
-        $budget = $this->createBudget(
-            $user,
-            $household,
-            '2026-01-01'
-        );
+        $budget = $this->createBudget($user, $household, '2026-01-01');
 
         $response = $this->auth($user)
             ->getJson("/api/v1/budgets/history/{$household->id}");
@@ -686,14 +649,10 @@ class BudgetHistoryTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $overrides
+     * @param  array<string, mixed>  $overrides
      */
-    private function createBudget(
-        User $user,
-        Household $household,
-        string $month,
-        array $overrides = []
-    ): Budget {
+    private function createBudget(User $user, Household $household, string $month, array $overrides = []): Budget
+    {
         return Budget::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -704,7 +663,7 @@ class BudgetHistoryTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $overrides
+     * @param  array<string, mixed>  $overrides
      */
     private function createCategory(array $overrides = []): BudgetCategory
     {
@@ -714,14 +673,12 @@ class BudgetHistoryTest extends TestCase
         ], $overrides));
     }
 
-    private function addHouseholdMember(
-    Household $household,
-    User $user
-): void {
-    HouseholdMember::factory()->create([
-        'household_id' => $household->id,
-        'user_id' => $user->id,
-        'role' => 'member',
-    ]);
-}
+    private function addHouseholdMember(Household $household, User $user): void
+    {
+        HouseholdMember::factory()->create([
+            'household_id' => $household->id,
+            'user_id' => $user->id,
+            'role' => 'member',
+        ]);
+    }
 }

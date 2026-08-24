@@ -24,15 +24,9 @@ class RemittanceAnalyticsServiceTest extends TestCase
         $this->repository = Mockery::mock(RemittanceRepository::class);
         $this->householdRepository = Mockery::mock(HouseholdRepository::class);
 
-        $this->app->instance(
-            RemittanceRepository::class,
-            $this->repository
-        );
+        $this->app->instance(RemittanceRepository::class, $this->repository);
 
-        $this->app->instance(
-            HouseholdRepository::class,
-            $this->householdRepository
-        );
+        $this->app->instance(HouseholdRepository::class, $this->householdRepository);
 
         $this->service = app(RemittanceAnalyticsService::class);
     }

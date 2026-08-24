@@ -34,11 +34,8 @@ class BudgetRepositoryTest extends TestCase
         ]);
     }
 
-    private function budget(
-        User $user,
-        Household $household,
-        array $overrides = []
-    ): Budget {
+    private function budget(User $user, Household $household, array $overrides = []): Budget
+    {
         return Budget::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -149,10 +146,7 @@ class BudgetRepositoryTest extends TestCase
 
         $otherHouseholdBudget = $this->budget($user, $otherHousehold);
 
-        $budgets = $this->repository->historyForHousehold(
-            $user->id,
-            $household->id
-        );
+        $budgets = $this->repository->historyForHousehold($user->id, $household->id);
 
         $ids = $budgets->pluck('id');
 
@@ -166,10 +160,7 @@ class BudgetRepositoryTest extends TestCase
         $user = User::factory()->create();
         $household = $this->household($user);
 
-        $budgets = $this->repository->historyForHousehold(
-            $user->id,
-            $household->id
-        );
+        $budgets = $this->repository->historyForHousehold($user->id, $household->id);
 
         $this->assertCount(0, $budgets);
     }
@@ -191,10 +182,7 @@ class BudgetRepositoryTest extends TestCase
             'month' => '2026-03-01',
         ]);
 
-        $budgets = $this->repository->historyForHousehold(
-            $user->id,
-            $household->id
-        );
+        $budgets = $this->repository->historyForHousehold($user->id, $household->id);
 
         $this->assertSame([
             $newest->id,
@@ -244,11 +232,7 @@ class BudgetRepositoryTest extends TestCase
             'month' => '2026-08-01',
         ]);
 
-        $result = $this->repository->forUserHouseholdMonth(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonth($user->id, $household->id, '2026-08-01');
 
         $this->assertNotNull($result);
         $this->assertSame($budget->id, $result->id);
@@ -259,11 +243,7 @@ class BudgetRepositoryTest extends TestCase
         $user = User::factory()->create();
         $household = $this->household($user);
 
-        $result = $this->repository->forUserHouseholdMonth(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonth($user->id, $household->id, '2026-08-01');
 
         $this->assertNull($result);
     }
@@ -279,11 +259,7 @@ class BudgetRepositoryTest extends TestCase
             'month' => '2026-08-01',
         ]);
 
-        $result = $this->repository->forUserHouseholdMonth(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonth($user->id, $household->id, '2026-08-01');
 
         $this->assertNull($result);
     }
@@ -299,11 +275,7 @@ class BudgetRepositoryTest extends TestCase
             'month' => '2026-08-01',
         ]);
 
-        $result = $this->repository->forUserHouseholdMonth(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonth($user->id, $household->id, '2026-08-01');
 
         $this->assertNull($result);
     }
@@ -326,11 +298,7 @@ class BudgetRepositoryTest extends TestCase
             'budget_category_id' => $category->id,
         ]);
 
-        $result = $this->repository->forUserHouseholdMonth(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonth($user->id, $household->id, '2026-08-01');
 
         $this->assertNotNull($result);
         $this->assertTrue($result->relationLoaded('household'));
@@ -353,11 +321,7 @@ class BudgetRepositoryTest extends TestCase
             'month' => '2026-08-01',
         ]);
 
-        $result = $this->repository->forUserHouseholdMonthWithItems(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonthWithItems($user->id, $household->id, '2026-08-01');
 
         $this->assertNotNull($result);
         $this->assertSame($budget->id, $result->id);
@@ -369,11 +333,7 @@ class BudgetRepositoryTest extends TestCase
         $user = User::factory()->create();
         $household = $this->household($user);
 
-        $result = $this->repository->forUserHouseholdMonthWithItems(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonthWithItems($user->id, $household->id, '2026-08-01');
 
         $this->assertNull($result);
     }
@@ -389,11 +349,7 @@ class BudgetRepositoryTest extends TestCase
             'month' => '2026-08-01',
         ]);
 
-        $result = $this->repository->forUserHouseholdMonthWithItems(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonthWithItems($user->id, $household->id, '2026-08-01');
 
         $this->assertNull($result);
     }
@@ -416,20 +372,11 @@ class BudgetRepositoryTest extends TestCase
             'budget_category_id' => $category->id,
         ]);
 
-        $result = $this->repository->forUserHouseholdMonthWithItems(
-            $user->id,
-            $household->id,
-            '2026-08-01'
-        );
+        $result = $this->repository->forUserHouseholdMonthWithItems($user->id, $household->id, '2026-08-01');
 
         $this->assertNotNull($result);
         $this->assertCount(1, $result->items);
-        $this->assertTrue(
-            $result->items->first()->relationLoaded('category')
-        );
-        $this->assertSame(
-            $category->id,
-            $result->items->first()->category->id
-        );
+        $this->assertTrue($result->items->first()->relationLoaded('category'));
+        $this->assertSame($category->id, $result->items->first()->category->id);
     }
 }

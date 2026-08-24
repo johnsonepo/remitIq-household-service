@@ -122,10 +122,7 @@ class BudgetCategoryServiceTest extends TestCase
             'is_default' => true,
         ]);
 
-        $result = $this->service->findForUser(
-            $user->id,
-            $category->id
-        );
+        $result = $this->service->findForUser($user->id, $category->id);
 
         $this->assertSame($category->id, $result->id);
     }
@@ -139,10 +136,7 @@ class BudgetCategoryServiceTest extends TestCase
             'is_default' => false,
         ]);
 
-        $result = $this->service->findForUser(
-            $user->id,
-            $category->id
-        );
+        $result = $this->service->findForUser($user->id, $category->id);
 
         $this->assertSame($category->id, $result->id);
     }
@@ -159,10 +153,7 @@ class BudgetCategoryServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->findForUser(
-            $user->id,
-            $category->id
-        );
+        $this->service->findForUser($user->id, $category->id);
     }
 
     public function test_find_for_user_rejects_unknown_category(): void
@@ -171,10 +162,7 @@ class BudgetCategoryServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->findForUser(
-            $user->id,
-            '00000000-0000-0000-0000-000000000000'
-        );
+        $this->service->findForUser($user->id, '00000000-0000-0000-0000-000000000000');
     }
 
     /*
@@ -193,13 +181,9 @@ class BudgetCategoryServiceTest extends TestCase
             'name' => 'Old Name',
         ]);
 
-        $result = $this->service->update(
-            $category,
-            $user->id,
-            [
-                'name' => 'New Name',
-            ]
-        );
+        $result = $this->service->update($category, $user->id, [
+            'name' => 'New Name',
+        ]);
 
         $this->assertSame($category->id, $result->id);
         $this->assertSame('New Name', $result->name);
@@ -224,13 +208,9 @@ class BudgetCategoryServiceTest extends TestCase
         $this->expectException(ApiException::class);
 
         try {
-            $this->service->update(
-                $category,
-                $user->id,
-                [
-                    'name' => 'Changed',
-                ]
-            );
+            $this->service->update($category, $user->id, [
+                'name' => 'Changed',
+            ]);
         } finally {
             $this->assertDatabaseHas('budget_categories', [
                 'id' => $category->id,
@@ -250,13 +230,9 @@ class BudgetCategoryServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->update(
-            $category,
-            $user->id,
-            [
-                'name' => 'Changed',
-            ]
-        );
+        $this->service->update($category, $user->id, [
+            'name' => 'Changed',
+        ]);
     }
 
     /*
@@ -274,10 +250,7 @@ class BudgetCategoryServiceTest extends TestCase
             'is_default' => false,
         ]);
 
-        $result = $this->service->delete(
-            $category,
-            $user->id
-        );
+        $result = $this->service->delete($category, $user->id);
 
         $this->assertTrue($result);
 
@@ -299,10 +272,7 @@ class BudgetCategoryServiceTest extends TestCase
         $this->expectException(ApiException::class);
 
         try {
-            $this->service->delete(
-                $category,
-                $user->id
-            );
+            $this->service->delete($category, $user->id);
         } finally {
             $this->assertDatabaseHas('budget_categories', [
                 'id' => $category->id,
@@ -320,10 +290,7 @@ class BudgetCategoryServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->delete(
-            $category,
-            $user->id
-        );
+        $this->service->delete($category, $user->id);
 
         $this->assertDatabaseHas('budget_categories', [
             'id' => $category->id,

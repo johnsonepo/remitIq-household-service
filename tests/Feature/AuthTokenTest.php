@@ -181,11 +181,7 @@ class AuthTokenTest extends TestCase
     public function test_invalid_bearer_token_cannot_refresh(): void
     {
         $response = $this
-            ->withHeaders(
-                $this->authHeaders(
-                    'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.invalid.token'
-                )
-            )
+            ->withHeaders($this->authHeaders('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.invalid.token'))
             ->postJson('/api/v1/auth/refresh');
 
         $response->assertUnauthorized();

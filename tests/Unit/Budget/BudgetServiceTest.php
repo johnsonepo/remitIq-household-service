@@ -7,14 +7,12 @@ use App\Models\Budget;
 use App\Models\BudgetCategory;
 use App\Models\BudgetItem;
 use App\Models\Household;
+use App\Models\HouseholdMember;
 use App\Models\User;
-use App\Repositories\BudgetRepository;
-use App\Repositories\HouseholdRepository;
 use App\Services\Budget\BudgetService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Tests\TestCase;
-use App\Models\HouseholdMember;
 
 class BudgetServiceTest extends TestCase
 {
@@ -38,11 +36,8 @@ class BudgetServiceTest extends TestCase
         ]);
     }
 
-    private function budget(
-        User $user,
-        Household $household,
-        array $overrides = []
-    ): Budget {
+    private function budget(User $user, Household $household, array $overrides = []): Budget
+    {
         return Budget::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -57,11 +52,8 @@ class BudgetServiceTest extends TestCase
         ], $overrides));
     }
 
-    private function item(
-        Budget $budget,
-        BudgetCategory $category,
-        array $overrides = []
-    ): BudgetItem {
+    private function item(Budget $budget, BudgetCategory $category, array $overrides = []): BudgetItem
+    {
         return BudgetItem::factory()->create(array_merge([
             'budget_id' => $budget->id,
             'budget_category_id' => $category->id,
@@ -163,29 +155,29 @@ class BudgetServiceTest extends TestCase
     }
 
     public function test_create_allows_household_member_to_create_budget(): void
-{
-    $owner = User::factory()->create();
-    $member = User::factory()->create();
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
 
-    $household = $this->household($owner);
+        $household = $this->household($owner);
 
-    HouseholdMember::factory()->create([
-        'household_id' => $household->id,
-        'user_id' => $member->id,
-        'role' => 'member',
-        'joined_at' => now(),
-    ]);
+        HouseholdMember::factory()->create([
+            'household_id' => $household->id,
+            'user_id' => $member->id,
+            'role' => 'member',
+            'joined_at' => now(),
+        ]);
 
-    $budget = $this->service->create($member->id, [
-        'household_id' => $household->id,
-        'month' => '2026-08-01',
-        'currency_code' => 'XAF',
-        'total_planned' => 150000,
-    ]);
+        $budget = $this->service->create($member->id, [
+            'household_id' => $household->id,
+            'month' => '2026-08-01',
+            'currency_code' => 'XAF',
+            'total_planned' => 150000,
+        ]);
 
-    $this->assertSame($member->id, $budget->user_id);
-    $this->assertSame($household->id, $budget->household_id);
-}
+        $this->assertSame($member->id, $budget->user_id);
+        $this->assertSame($household->id, $budget->household_id);
+    }
 
     public function test_create_rejects_inaccessible_household(): void
     {
@@ -353,10 +345,7 @@ class BudgetServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->findForUser(
-            $user->id,
-            '00000000-0000-0000-0000-000000000000'
-        );
+        $this->service->findForUser($user->id, '00000000-0000-0000-0000-000000000000');
     }
 
     /*
@@ -513,12 +502,7 @@ class BudgetServiceTest extends TestCase
             'actual_amount' => 20000,
         ]);
 
-        $result = $this->service->compare(
-            $user->id,
-            $household->id,
-            '2026-08-01',
-            '2026-07-01'
-        );
+        $result = $this->service->compare($user->id, $household->id, '2026-08-01', '2026-07-01');
 
         $this->assertSame($household->id, $result['household_id']);
 
@@ -576,12 +560,7 @@ class BudgetServiceTest extends TestCase
             'actual_amount' => 10000,
         ]);
 
-        $result = $this->service->compare(
-            $user->id,
-            $household->id,
-            '2026-08-01',
-            '2026-07-01'
-        );
+        $result = $this->service->compare($user->id, $household->id, '2026-08-01', '2026-07-01');
 
         $this->assertCount(3, $result['categories']);
 
@@ -636,12 +615,7 @@ class BudgetServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->compare(
-            $otherUser->id,
-            $household->id,
-            '2026-08-01',
-            '2026-07-01'
-        );
+        $this->service->compare($otherUser->id, $household->id, '2026-08-01', '2026-07-01');
     }
 
     public function test_compare_rejects_missing_current_budget(): void
@@ -655,12 +629,7 @@ class BudgetServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->compare(
-            $user->id,
-            $household->id,
-            '2026-08-01',
-            '2026-07-01'
-        );
+        $this->service->compare($user->id, $household->id, '2026-08-01', '2026-07-01');
     }
 
     public function test_compare_rejects_missing_comparison_budget(): void
@@ -674,12 +643,7 @@ class BudgetServiceTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $this->service->compare(
-            $user->id,
-            $household->id,
-            '2026-08-01',
-            '2026-07-01'
-        );
+        $this->service->compare($user->id, $household->id, '2026-08-01', '2026-07-01');
     }
 
     public function test_compare_uses_item_amounts_as_source_of_truth(): void
@@ -709,12 +673,7 @@ class BudgetServiceTest extends TestCase
             'actual_amount' => 50000,
         ]);
 
-        $result = $this->service->compare(
-            $user->id,
-            $household->id,
-            '2026-08-01',
-            '2026-07-01'
-        );
+        $result = $this->service->compare($user->id, $household->id, '2026-08-01', '2026-07-01');
 
         $this->assertEquals(100000, $result['current']['planned']);
         $this->assertEquals(70000, $result['current']['actual']);

@@ -28,7 +28,7 @@ class BudgetComparisonTest extends TestCase
     {
         $household = Household::factory()->create();
 
-        $response = $this->getJson('/api/v1/budgets/comparison?' . http_build_query([
+        $response = $this->getJson('/api/v1/budgets/comparison?'.http_build_query([
             'household_id' => $household->id,
             'month' => '2026-02-01',
             'compare_month' => '2026-01-01',
@@ -48,7 +48,7 @@ class BudgetComparisonTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
             ]));
@@ -63,7 +63,7 @@ class BudgetComparisonTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => 'not-a-uuid',
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -80,7 +80,7 @@ class BudgetComparisonTest extends TestCase
         $household = $this->createHousehold($user);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'compare_month' => '2026-01-01',
             ]));
@@ -96,7 +96,7 @@ class BudgetComparisonTest extends TestCase
         $household = $this->createHousehold($user);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => 'not-a-date',
                 'compare_month' => '2026-01-01',
@@ -113,7 +113,7 @@ class BudgetComparisonTest extends TestCase
         $household = $this->createHousehold($user);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
             ]));
@@ -129,7 +129,7 @@ class BudgetComparisonTest extends TestCase
         $household = $this->createHousehold($user);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => 'not-a-date',
@@ -157,7 +157,7 @@ class BudgetComparisonTest extends TestCase
         $this->createBudget($owner, $household, '2026-01-01');
 
         $response = $this->auth($attacker)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -183,7 +183,7 @@ class BudgetComparisonTest extends TestCase
         $this->createBudget($owner, $household, '2026-01-01');
 
         $response = $this->auth($member)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -210,7 +210,7 @@ class BudgetComparisonTest extends TestCase
         $this->createBudget($user, $household, '2026-01-01');
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -229,7 +229,7 @@ class BudgetComparisonTest extends TestCase
         $this->createBudget($user, $household, '2026-02-01');
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -251,7 +251,7 @@ class BudgetComparisonTest extends TestCase
         $this->createBudget($user, $householdB, '2026-01-01');
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $householdA->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -275,7 +275,7 @@ class BudgetComparisonTest extends TestCase
         $comparison = $this->createBudget($user, $household, '2026-01-01');
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -298,7 +298,7 @@ class BudgetComparisonTest extends TestCase
         $this->createBudget($user, $household, '2026-01-01');
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -356,7 +356,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $categoryA, 80000, 30000);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -389,7 +389,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $category, 100000, 90000);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -411,7 +411,7 @@ class BudgetComparisonTest extends TestCase
         $this->createBudget($user, $household, '2026-01-01');
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -453,7 +453,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $category, 80000, 30000);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -494,7 +494,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $comparisonCategory, 50000, 20000);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -539,7 +539,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $comparisonCategory, 50000, 20000);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -578,7 +578,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $category, 90000, 45000);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -609,7 +609,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $comparisonOnly, 30000, 10000);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -644,7 +644,7 @@ class BudgetComparisonTest extends TestCase
         $this->createBudget($user, $household, '2026-01-15');
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-15',
                 'compare_month' => '2026-01-15',
@@ -670,7 +670,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $category, 150000, 50000);
 
         $response = $this->auth($user)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2027-01-01',
                 'compare_month' => '2026-01-01',
@@ -709,7 +709,7 @@ class BudgetComparisonTest extends TestCase
         $this->createItem($comparison, $category, 999999, 999999);
 
         $response = $this->auth($owner)
-            ->getJson('/api/v1/budgets/comparison?' . http_build_query([
+            ->getJson('/api/v1/budgets/comparison?'.http_build_query([
                 'household_id' => $household->id,
                 'month' => '2026-02-01',
                 'compare_month' => '2026-01-01',
@@ -739,14 +739,10 @@ class BudgetComparisonTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $overrides
+     * @param  array<string, mixed>  $overrides
      */
-    private function createBudget(
-        User $user,
-        Household $household,
-        string $month,
-        array $overrides = []
-    ): Budget {
+    private function createBudget(User $user, Household $household, string $month, array $overrides = []): Budget
+    {
         return Budget::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -757,7 +753,7 @@ class BudgetComparisonTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $overrides
+     * @param  array<string, mixed>  $overrides
      */
     private function createCategory(array $overrides = []): BudgetCategory
     {
@@ -768,15 +764,10 @@ class BudgetComparisonTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $overrides
+     * @param  array<string, mixed>  $overrides
      */
-    private function createItem(
-        Budget $budget,
-        BudgetCategory $category,
-        float|int $planned,
-        float|int $actual,
-        array $overrides = []
-    ): BudgetItem {
+    private function createItem(Budget $budget, BudgetCategory $category, float|int $planned, float|int $actual, array $overrides = []): BudgetItem
+    {
         return BudgetItem::factory()->create(array_merge([
             'budget_id' => $budget->id,
             'budget_category_id' => $category->id,

@@ -32,12 +32,8 @@ class RemittanceAnalyticsApiTest extends TestCase
         return TransferProvider::factory()->create($overrides);
     }
 
-    private function remittance(
-        User $user,
-        Household $household,
-        TransferProvider $provider,
-        array $overrides = []
-    ): Remittance {
+    private function remittance(User $user, Household $household, TransferProvider $provider, array $overrides = []): Remittance
+    {
         return Remittance::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -54,11 +50,9 @@ class RemittanceAnalyticsApiTest extends TestCase
 
     private function analytics(array $filters = [])
     {
-        return $this->getJson(
-            self::ENDPOINT.($filters === []
+        return $this->getJson(self::ENDPOINT.($filters === []
                 ? ''
-                : '?'.http_build_query($filters))
-        );
+                : '?'.http_build_query($filters)));
     }
 
     /*

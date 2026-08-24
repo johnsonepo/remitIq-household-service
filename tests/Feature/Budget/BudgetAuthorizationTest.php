@@ -152,10 +152,7 @@ class BudgetAuthorizationTest extends TestCase
 
         $budget = $this->budget($owner, $ownerHousehold);
 
-        $this->assertNotSame(
-            $ownerHousehold->id,
-            $attackerHousehold->id
-        );
+        $this->assertNotSame($ownerHousehold->id, $attackerHousehold->id);
 
         $this->auth($attacker)
             ->getJson("/api/v1/budgets/{$budget->id}")

@@ -40,10 +40,8 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    private function budgetData(
-        Household $household,
-        array $overrides = []
-    ): array {
+    private function budgetData(Household $household, array $overrides = []): array
+    {
         return array_merge([
             'household_id' => $household->id,
             'month' => '2026-08-01',
@@ -203,10 +201,7 @@ class BudgetTest extends TestCase
         $household = $this->household($user);
 
         $response = $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household)
-            );
+            ->postJson('/api/v1/budgets', $this->budgetData($household));
 
         $response->assertCreated();
 
@@ -226,12 +221,9 @@ class BudgetTest extends TestCase
         $household = $this->household($user);
 
         $response = $this->auth($user)
-            ->postJson('/api/v1/budgets', array_merge(
-                $this->budgetData($household),
-                [
-                    'user_id' => $other->id,
-                ]
-            ));
+            ->postJson('/api/v1/budgets', array_merge($this->budgetData($household), [
+                'user_id' => $other->id,
+            ]));
 
         $response->assertCreated();
 
@@ -249,10 +241,7 @@ class BudgetTest extends TestCase
         $household = $this->household($owner);
 
         $this->auth($attacker)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household)
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($household))
             ->assertForbidden();
 
         $this->assertDatabaseMissing('budgets', [
@@ -346,12 +335,9 @@ class BudgetTest extends TestCase
         $household = $this->household($user);
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household, [
-                    'total_planned' => -1,
-                ])
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($household, [
+                'total_planned' => -1,
+            ]))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['total_planned']);
     }
@@ -362,12 +348,9 @@ class BudgetTest extends TestCase
         $household = $this->household($user);
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household, [
-                    'total_planned' => 0,
-                ])
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($household, [
+                'total_planned' => 0,
+            ]))
             ->assertCreated();
     }
 
@@ -377,12 +360,9 @@ class BudgetTest extends TestCase
         $household = $this->household($user);
 
         $response = $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household, [
-                    'total_planned' => 123456.78,
-                ])
-            );
+            ->postJson('/api/v1/budgets', $this->budgetData($household, [
+                'total_planned' => 123456.78,
+            ]));
 
         $response->assertCreated();
 
@@ -398,12 +378,9 @@ class BudgetTest extends TestCase
         $household = $this->household($user);
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household, [
-                    'currency_code' => 'XA',
-                ])
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($household, [
+                'currency_code' => 'XA',
+            ]))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['currency_code']);
     }
@@ -414,12 +391,9 @@ class BudgetTest extends TestCase
         $household = $this->household($user);
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household, [
-                    'currency_code' => 'X1F',
-                ])
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($household, [
+                'currency_code' => 'X1F',
+            ]))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['currency_code']);
     }
@@ -436,10 +410,7 @@ class BudgetTest extends TestCase
         ]);
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household)
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($household))
             ->assertConflict();
 
         $this->assertDatabaseCount('budgets', 1);
@@ -453,17 +424,11 @@ class BudgetTest extends TestCase
         $householdB = $this->household($user);
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($householdA)
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($householdA))
             ->assertCreated();
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($householdB)
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($householdB))
             ->assertCreated();
 
         $this->assertDatabaseCount('budgets', 2);
@@ -475,21 +440,15 @@ class BudgetTest extends TestCase
         $household = $this->household($user);
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household, [
-                    'month' => '2026-08-01',
-                ])
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($household, [
+                'month' => '2026-08-01',
+            ]))
             ->assertCreated();
 
         $this->auth($user)
-            ->postJson(
-                '/api/v1/budgets',
-                $this->budgetData($household, [
-                    'month' => '2026-09-01',
-                ])
-            )
+            ->postJson('/api/v1/budgets', $this->budgetData($household, [
+                'month' => '2026-09-01',
+            ]))
             ->assertCreated();
 
         $this->assertDatabaseCount('budgets', 2);
@@ -893,9 +852,6 @@ class BudgetTest extends TestCase
 
         $budget->load('items');
 
-        $this->assertSame(
-            35000.0,
-            $budget->remaining()
-        );
+        $this->assertSame(35000.0, $budget->remaining());
     }
 }

@@ -7,14 +7,14 @@ use App\Notifications\Auth\ResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
-use Illuminate\Support\Facades\RateLimiter;
-
 
 class AuthForgotPasswordTest extends TestCase
 {
     use RefreshDatabase;
+
     protected string $testIp;
 
     protected function setUp(): void

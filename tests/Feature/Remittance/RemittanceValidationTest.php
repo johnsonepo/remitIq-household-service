@@ -41,25 +41,16 @@ class RemittanceValidationTest extends TestCase
         return TransferProvider::factory()->create();
     }
 
-    protected function createPayload(
-        Household $household,
-        array $overrides = []
-    ): array {
-        return array_merge(
-            self::BASE_CREATE_PAYLOAD,
-            [
-                'household_id' => $household->id,
-                'transfer_provider_id' => $this->provider()->id,
-            ],
-            $overrides
-        );
+    protected function createPayload(Household $household, array $overrides = []): array
+    {
+        return array_merge(self::BASE_CREATE_PAYLOAD, [
+            'household_id' => $household->id,
+            'transfer_provider_id' => $this->provider()->id,
+        ], $overrides);
     }
 
-    protected function createRemittance(
-        User $user,
-        Household $household,
-        array $overrides = []
-    ): Remittance {
+    protected function createRemittance(User $user, Household $household, array $overrides = []): Remittance
+    {
         return Remittance::factory()->create(array_merge([
             'user_id' => $user->id,
             'household_id' => $household->id,
@@ -108,10 +99,7 @@ class RemittanceValidationTest extends TestCase
         $household = $this->household($user);
         $remittance = $this->createRemittance($user, $household);
 
-        $this->putJson(
-            "{$this->createEndpoint()}/{$remittance->id}",
-            ['amount_sent' => 200]
-        )->assertUnauthorized();
+        $this->putJson("{$this->createEndpoint()}/{$remittance->id}", ['amount_sent' => 200])->assertUnauthorized();
     }
 
     public function test_history_requires_authentication(): void
@@ -610,10 +598,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['amount_sent' => 250]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['amount_sent' => 250])
             ->assertOk()
             ->assertJsonPath('data.amount_sent', '250.00');
     }
@@ -625,10 +610,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['transfer_provider_id' => null]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['transfer_provider_id' => null])
             ->assertOk()
             ->assertJsonPath('data.transfer_provider_id', null);
     }
@@ -640,10 +622,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['rate_source' => null]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['rate_source' => null])
             ->assertOk()
             ->assertJsonPath('data.rate_source', null);
     }
@@ -655,10 +634,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['notes' => null]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['notes' => null])
             ->assertOk()
             ->assertJsonPath('data.notes', null);
     }
@@ -670,10 +646,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['amount_sent' => 0]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['amount_sent' => 0])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['amount_sent']);
     }
@@ -685,10 +658,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['amount_received' => -10]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['amount_received' => -10])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['amount_received']);
     }
@@ -700,10 +670,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['exchange_rate' => 0]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['exchange_rate' => 0])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['exchange_rate']);
     }
@@ -715,10 +682,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['sent_currency_code' => 'usd']
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['sent_currency_code' => 'usd'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['sent_currency_code']);
     }
@@ -730,10 +694,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['sent_at' => '20/08/2026']
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['sent_at' => '20/08/2026'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['sent_at']);
     }
@@ -745,10 +706,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['household_id' => fake()->uuid()]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['household_id' => fake()->uuid()])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['household_id']);
     }
@@ -773,7 +731,7 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson($this->historyEndpoint() . '?household_id=invalid')
+            ->getJson($this->historyEndpoint().'?household_id=invalid')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['household_id']);
     }
@@ -783,9 +741,7 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson(
-                $this->historyEndpoint() . '?household_id=' . fake()->uuid()
-            )
+            ->getJson($this->historyEndpoint().'?household_id='.fake()->uuid())
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['household_id']);
     }
@@ -795,7 +751,7 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson($this->historyEndpoint() . '?transfer_provider_id=invalid')
+            ->getJson($this->historyEndpoint().'?transfer_provider_id=invalid')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['transfer_provider_id']);
     }
@@ -805,7 +761,7 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson($this->historyEndpoint() . '?from=20-08-2026')
+            ->getJson($this->historyEndpoint().'?from=20-08-2026')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['from']);
     }
@@ -815,7 +771,7 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson($this->historyEndpoint() . '?to=20-08-2026')
+            ->getJson($this->historyEndpoint().'?to=20-08-2026')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['to']);
     }
@@ -825,10 +781,8 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson(
-                $this->historyEndpoint() .
-                '?from=2026-01-01&to=2026-08-31'
-            )
+            ->getJson($this->historyEndpoint().
+                '?from=2026-01-01&to=2026-08-31')
             ->assertOk();
     }
 
@@ -852,7 +806,7 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson($this->analyticsEndpoint() . '?household_id=invalid')
+            ->getJson($this->analyticsEndpoint().'?household_id=invalid')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['household_id']);
     }
@@ -862,10 +816,8 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson(
-                $this->analyticsEndpoint() .
-                '?transfer_provider_id=invalid'
-            )
+            ->getJson($this->analyticsEndpoint().
+                '?transfer_provider_id=invalid')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['transfer_provider_id']);
     }
@@ -875,10 +827,8 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson(
-                $this->analyticsEndpoint() .
-                '?from=20-08-2026'
-            )
+            ->getJson($this->analyticsEndpoint().
+                '?from=20-08-2026')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['from']);
     }
@@ -888,10 +838,8 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson(
-                $this->analyticsEndpoint() .
-                '?to=20-08-2026'
-            )
+            ->getJson($this->analyticsEndpoint().
+                '?to=20-08-2026')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['to']);
     }
@@ -901,10 +849,8 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson(
-                $this->analyticsEndpoint() .
-                '?from=2026-08-31&to=2026-08-01'
-            )
+            ->getJson($this->analyticsEndpoint().
+                '?from=2026-08-31&to=2026-08-01')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['to']);
     }
@@ -914,10 +860,8 @@ class RemittanceValidationTest extends TestCase
         $user = $this->authenticatedUser();
 
         $this->actingAs($user, 'api')
-            ->getJson(
-                $this->analyticsEndpoint() .
-                '?from=2026-08-20&to=2026-08-20'
-            )
+            ->getJson($this->analyticsEndpoint().
+                '?from=2026-08-20&to=2026-08-20')
             ->assertOk();
     }
 
@@ -934,10 +878,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                []
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", [])
             ->assertOk();
     }
 
@@ -993,10 +934,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['rate_source' => str_repeat('a', 256)]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['rate_source' => str_repeat('a', 256)])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['rate_source']);
     }
@@ -1008,10 +946,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['transfer_provider_id' => 'invalid']
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['transfer_provider_id' => 'invalid'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['transfer_provider_id']);
     }
@@ -1023,10 +958,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['transfer_provider_id' => fake()->uuid()]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['transfer_provider_id' => fake()->uuid()])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['transfer_provider_id']);
     }
@@ -1038,10 +970,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['received_currency_code' => 'XAFR']
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['received_currency_code' => 'XAFR'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['received_currency_code']);
     }
@@ -1053,10 +982,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['sent_currency_code' => 'U1D']
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['sent_currency_code' => 'U1D'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['sent_currency_code']);
     }
@@ -1068,13 +994,10 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                [
-                    'sent_currency_code' => 'EUR',
-                    'received_currency_code' => 'XAF',
-                ]
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", [
+                'sent_currency_code' => 'EUR',
+                'received_currency_code' => 'XAF',
+            ])
             ->assertOk();
     }
 
@@ -1085,10 +1008,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['sent_at' => '2026-12-31']
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['sent_at' => '2026-12-31'])
             ->assertOk();
     }
 
@@ -1099,10 +1019,7 @@ class RemittanceValidationTest extends TestCase
         $remittance = $this->createRemittance($user, $household);
 
         $this->actingAs($user, 'api')
-            ->putJson(
-                "{$this->createEndpoint()}/{$remittance->id}",
-                ['sent_at' => '2026-02-30']
-            )
+            ->putJson("{$this->createEndpoint()}/{$remittance->id}", ['sent_at' => '2026-02-30'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['sent_at']);
     }
