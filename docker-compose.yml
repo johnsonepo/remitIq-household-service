@@ -1,20 +1,76 @@
-# ============================================================================
+services:
+  # ============================================================================
+  # Development Services
+  # ============================================================================
+  household-service:
+    container_name: remitiq-household-service-dev
+    build:
+      context: .
+      target: development
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: pgsql
+      DB_HOST: household-db
+      DB_PORT: 5432
+      DB_DATABASE: remitiq_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      household-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - remitiq-network
+
+  household-db:
+    image: postgres:16-alpine
+    container_name: remitiq-household-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: remitiq_test
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d remitiq_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - remitiq-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: remitiq-household-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - remitiq-network
+
+  # ============================================================================
   # Laravel Household Service (Production)
   # ============================================================================
-
   household-service-prod:
-
     container_name: remitiq-household-service-prod
-
     build:
       context: .
       dockerfile: Dockerfile
       target: production
-
     restart: unless-stopped
-
     working_dir: /var/www/html
-
     environment:
       APP_NAME: ${APP_NAME}
       APP_ENV: production
@@ -58,7 +114,6 @@
       NOTIFICATION_SERVICE_API_KEY: ${NOTIFICATION_SERVICE_API_KEY}
       NOTIFICATION_SERVICE_TIMEOUT: ${NOTIFICATION_SERVICE_TIMEOUT}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-
     healthcheck:
       test:
         - CMD-SHELL
@@ -67,34 +122,25 @@
       timeout: 10s
       retries: 5
       start_period: 10s
-
     depends_on:
       household-db:
         condition: service_healthy
       redis:
         condition: service_healthy
-
     networks:
       - remitiq-network
-
 
   # ============================================================================
   # Laravel Queue Worker (Production)
   # ============================================================================
-
   queue-prod:
-
     container_name: remitiq-household-queue-prod
-
     build:
       context: .
       dockerfile: Dockerfile
       target: production
-
     restart: unless-stopped
-
     working_dir: /var/www/html
-
     command:
       - php
       - artisan
@@ -104,7 +150,6 @@
       - --tries=3
       - --timeout=90
       - --max-time=3600
-
     environment:
       APP_NAME: ${APP_NAME}
       APP_ENV: production
@@ -143,34 +188,25 @@
       NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
       NOTIFICATION_SERVICE_API_KEY: ${NOTIFICATION_SERVICE_API_KEY}
       NOTIFICATION_SERVICE_TIMEOUT: ${NOTIFICATION_SERVICE_TIMEOUT}
-
     depends_on:
       household-db:
         condition: service_healthy
       redis:
         condition: service_healthy
-
     networks:
       - remitiq-network
-
 
   # ============================================================================
   # Laravel Scheduler (Production)
   # ============================================================================
-
   scheduler-prod:
-
     container_name: remitiq-household-scheduler-prod
-
     build:
       context: .
       dockerfile: Dockerfile
       target: production
-
     restart: unless-stopped
-
     working_dir: /var/www/html
-
     command:
       - sh
       - -c
@@ -179,7 +215,6 @@
           php artisan schedule:run --no-interaction --verbose;
           sleep 60;
         done
-
     environment:
       APP_NAME: ${APP_NAME}
       APP_ENV: production
@@ -218,12 +253,17 @@
       NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
       NOTIFICATION_SERVICE_API_KEY: ${NOTIFICATION_SERVICE_API_KEY}
       NOTIFICATION_SERVICE_TIMEOUT: ${NOTIFICATION_SERVICE_TIMEOUT}
-
     depends_on:
       household-db:
         condition: service_healthy
       redis:
         condition: service_healthy
-
     networks:
       - remitiq-network
+
+networks:
+  remitiq-network:
+    driver: bridge
+
+volumes:
+  pgdata:
