@@ -71,8 +71,41 @@ jobs:
       - name: Install Dependencies inside Container
         run: docker compose exec -T household-service composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Verify PHPUnit Configuration Exists
-        run: docker compose exec -T household-service ls -la phpunit.xml
+      - name: Generate PHPUnit Configuration Dynamically
+        run: |
+          docker compose exec -T household-service bash -c 'cat << '\''EOF'\'' > phpunit.xml
+          <?xml version="1.0" encoding="UTF-8"?>
+          <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+                   bootstrap="vendor/autoload.php"
+                   colors="true"
+          >
+              <testsuites>
+                  <testsuite name="Unit">
+                      <directory>tests/Unit</directory>
+                  </testsuite>
+                  <testsuite name="Feature">
+                      <directory>tests/Feature</directory>
+                  </testsuite>
+              </testsuites>
+              <source>
+                  <include>
+                      <directory>app</directory>
+                  </include>
+              </source>
+              <php>
+                  <env name="APP_ENV" value="testing"/>
+                  <env name="BCRYPT_ROUNDS" value="4"/>
+                  <env name="CACHE_STORE" value="redis"/>
+                  <env name="DB_CONNECTION" value="pgsql"/>
+                  <env name="DB_DATABASE" value="remitiq_test"/>
+                  <env name="MAIL_MAILER" value="array"/>
+                  <env name="QUEUE_CONNECTION" value="redis"/>
+                  <env name="SESSION_DRIVER" value="redis"/>
+                  <env name="TELESCOPE_ENABLED" value="false"/>
+              </php>
+          </phpunit>
+          EOF'
 
       - name: Generate Application Key and JWT Keys
         run: |
