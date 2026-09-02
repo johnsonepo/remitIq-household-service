@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Household\HouseholdInvitationController;
 use App\Http\Controllers\Api\V1\Household\HouseholdMemberController;
 use App\Http\Controllers\Api\V1\Remittance\RemittanceAnalyticsController;
 use App\Http\Controllers\Api\V1\Remittance\RemittanceController;
+use App\Http\Controllers\Api\V1\Remittance\TransferProviderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +52,10 @@ Route::middleware('auth:api')->group(function () {
      * Households
      * =========================================================================
      */
+
+    Route::get('households/invitations', [HouseholdInvitationController::class, 'myInvitations'])
+    ->name('households.invitations.mine');
+
     Route::apiResource('households', HouseholdController::class);
 
     /**
@@ -113,6 +118,14 @@ Route::middleware('auth:api')->group(function () {
             'items' => 'budgetItem',
         ])
         ->except(['create', 'edit']);
+
+    /**
+     * =========================================================================
+     * Transfer Providers
+     * =========================================================================
+     */
+    Route::get('transfer-providers', [TransferProviderController::class, 'index'])
+        ->name('transfer-providers.index');
 
     /**
      * =========================================================================
