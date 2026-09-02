@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # ============================================================================
   # Development Services
@@ -11,15 +13,16 @@ services:
       - "8000:8000"
     volumes:
       - .:/var/www/html
+    command: php artisan serve --host=0.0.0.0 --port=8000
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
-      DB_CONNECTION: pgsql
+      DB_CONNECTION: ${DB_CONNECTION:-pgsql}
       DB_HOST: household-db
       DB_PORT: 5432
-      DB_DATABASE: remitiq_test
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
+      DB_DATABASE: ${DB_DATABASE:-remitiq_dev}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
     depends_on:
       household-db:
         condition: service_healthy
@@ -32,15 +35,15 @@ services:
     image: postgres:16-alpine
     container_name: remitiq-household-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: remitiq_test
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_DATABASE:-remitiq_dev}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d remitiq_test"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-remitiq_dev}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -77,12 +80,12 @@ services:
       APP_KEY: ${APP_KEY}
       APP_DEBUG: "false"
       APP_URL: ${APP_URL}
-      DB_CONNECTION: ${DB_CONNECTION}
+      DB_CONNECTION: ${DB_CONNECTION:-pgsql}
       DB_HOST: household-db
       DB_PORT: 5432
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_PROD_DATABASE:-remitiq_prod}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
       CACHE_STORE: ${CACHE_STORE}
       SESSION_DRIVER: ${SESSION_DRIVER}
       SESSION_LIFETIME: ${SESSION_LIFETIME}
@@ -156,12 +159,12 @@ services:
       APP_KEY: ${APP_KEY}
       APP_DEBUG: "false"
       APP_URL: ${APP_URL}
-      DB_CONNECTION: ${DB_CONNECTION}
+      DB_CONNECTION: ${DB_CONNECTION:-pgsql}
       DB_HOST: household-db
       DB_PORT: 5432
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_PROD_DATABASE:-remitiq_prod}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
       CACHE_STORE: ${CACHE_STORE}
       SESSION_DRIVER: ${SESSION_DRIVER}
       QUEUE_CONNECTION: ${QUEUE_CONNECTION}
@@ -221,12 +224,12 @@ services:
       APP_KEY: ${APP_KEY}
       APP_DEBUG: "false"
       APP_URL: ${APP_URL}
-      DB_CONNECTION: ${DB_CONNECTION}
+      DB_CONNECTION: ${DB_CONNECTION:-pgsql}
       DB_HOST: household-db
       DB_PORT: 5432
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_PROD_DATABASE:-remitiq_prod}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
       CACHE_STORE: ${CACHE_STORE}
       SESSION_DRIVER: ${SESSION_DRIVER}
       QUEUE_CONNECTION: ${QUEUE_CONNECTION}

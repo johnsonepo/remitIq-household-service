@@ -256,4 +256,14 @@ class HouseholdInvitationService
 
         return $saved;
     }
+
+    /**
+     * Get pending invitations for a user.
+     *
+     * @return Collection<int, HouseholdInvitation>
+     */
+    public function forUser(User $user): Collection
+    {
+        return $this->repository->forEmail($user->email);
+    }
 }

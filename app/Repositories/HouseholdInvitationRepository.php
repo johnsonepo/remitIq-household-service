@@ -76,4 +76,23 @@ class HouseholdInvitationRepository extends BaseRepository
 
         return $invitation;
     }
+
+    /**
+     * Get pending invitations for a user's email address.
+     *
+     * @return Collection<int, HouseholdInvitation>
+     */
+    public function forEmail(string $email): Collection
+    {
+        /** @var Collection<int, HouseholdInvitation> $invitations */
+        $invitations = $this->model
+            ->newQuery()
+            ->with(['inviter', 'household'])
+            ->where('email', strtolower(trim($email)))
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        return $invitations;
+    }
 }

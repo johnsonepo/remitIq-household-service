@@ -83,4 +83,17 @@ class HouseholdInvitationController extends BaseController
 
         return $this->success($invitation, 'Household invitation declined successfully.');
     }
+
+    /**
+     * List invitations received by the authenticated user.
+     */
+    public function myInvitations(Request $request): JsonResponse
+    {
+        $invitations = $this->service->forUser($request->user());
+
+        return $this->success(
+            $invitations,
+            'Your household invitations retrieved successfully.'
+        );
+    }
 }
